@@ -28,7 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
         Map<String, Object> attributes = super.loadUser(userRequest).getAttributes();
-        log.debug("응답 구조: {}", attributes);
+        log.info("응답 구조: {}", attributes);
 
         KakaoOAuth2UserInfo userInfo = new KakaoOAuth2UserInfo(attributes);
 
