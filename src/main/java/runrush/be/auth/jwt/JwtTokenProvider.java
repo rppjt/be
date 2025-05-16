@@ -11,6 +11,7 @@ import runrush.be.user.repository.UserRepository;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 
 @Component
@@ -77,6 +78,11 @@ public class JwtTokenProvider {
     public Long getUserIdFromToken(String token) {
         Claims claims = parseClaims(token);
         return claims.get("userId", Long.class);
+    }
+
+    public Instant getJwtExpiration(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getExpiration().toInstant();
     }
 
     public boolean validateToken(String token) {
