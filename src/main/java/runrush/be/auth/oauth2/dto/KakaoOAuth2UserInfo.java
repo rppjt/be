@@ -4,13 +4,18 @@ import java.util.Map;
 
 public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
     private Map<String, Object> attributes;
+    private Map<String, Object> properties;
     private Map<String, Object> kakaoAccount;
     private Map<String, Object> profile;
 
     public KakaoOAuth2UserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
+        this.properties = (Map<String, Object>) attributes.get("properties");
         this.kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        this.profile = (Map<String, Object>) attributes.get("kakao_profile");
+
+        if (this.kakaoAccount != null && this.kakaoAccount.containsKey("profile")) {
+            this.profile = (Map<String, Object>) this.kakaoAccount.get("profile");
+        }
     }
 
     @Override
