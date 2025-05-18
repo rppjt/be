@@ -11,10 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import runrush.be.auth.domain.RefreshToken;
 import runrush.be.auth.jwt.JwtTokenProvider;
 import runrush.be.auth.model.UserPrincipal;
-import runrush.be.auth.repository.RefreshTokenRepository;
+import runrush.be.auth.service.RefreshTokenService;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -27,7 +26,7 @@ import java.util.Map;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -42,13 +41,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         Instant jwtExpiration = jwtTokenProvider.getJwtExpiration(refreshToken);
         long secondsUntilExpiration = jwtExpiration.getEpochSecond() - Instant.now().getEpochSecond();
 
-        refreshTokenRepository.deleteByUserEmail(email);
-        RefreshToken rToken = RefreshToken.builder()
-                .userEmail(email)
-                .token(refreshToken)
-                .expiresAt(jwtExpiration)
-                .build();
-        refreshTokenRepository.save(rToken);
+        refreshTokenService.renewRefreshToken(email, refreshToken, jwtExpiration);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setPath("/");
