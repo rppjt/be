@@ -21,6 +21,7 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
+    @Transactional
     public String renewAccessToken(String token) {
         RefreshToken refreshToken = findByToken(token)
                 .orElseThrow(() -> new RuntimeException("리프레시 토큰이 존재하지 않습니다."));

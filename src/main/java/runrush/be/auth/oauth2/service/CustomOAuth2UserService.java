@@ -1,4 +1,4 @@
-package runrush.be.user.service;
+package runrush.be.auth.oauth2.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
