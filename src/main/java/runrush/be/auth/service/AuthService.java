@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import runrush.be.auth.jwt.JwtTokenProvider;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -36,5 +38,24 @@ public class AuthService {
 
     public String reissueAccessToken(String refreshToken) {
         return refreshTokenService.renewAccessToken(refreshToken);
+    }
+
+    public void setRefreshTokenCookie(String email, HttpServletResponse response) {
+        String refreshToken = jwtTokenProvider.generateRefreshToken(email);
+        Instant jwtExpiration = jwtTokenProvider.getJwtExpiration(refreshToken);
+        long secondsUntilExpiration = jwtExpiration.getEpochSecond() - Instant.now().getEpochSecond();
+
+        refreshTokenService.renewRefreshToken(email, refreshToken, jwtExpiration);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false); // 로컬
+        refreshTokenCookie.setMaxAge((int) secondsUntilExpiration);
+        response.addCookie(refreshTokenCookie);
+    }
+
+    public String generateAccessToken(String email) {
+        return jwtTokenProvider.generateAccessToken(email);
     }
 }
