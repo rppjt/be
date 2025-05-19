@@ -6,12 +6,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import runrush.be.auth.model.UserPrincipal;
 import runrush.be.auth.service.AuthService;
 
 import java.util.Map;
@@ -25,13 +23,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@AuthenticationPrincipal UserPrincipal user,
+    public ResponseEntity<String> logout(
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
         String accessToken = request.getHeader("Authorization");
 
         authService.logout(accessToken, response);
-
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("로그아웃 되었습니다.");
     }
