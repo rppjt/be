@@ -54,6 +54,11 @@ public class RunningRecord {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "total_time")
+    private long totalTime;
+
+    private double pace;
+
     @Builder
     public RunningRecord(
             User user,
@@ -64,7 +69,9 @@ public class RunningRecord {
             double endLatitude,
             double endLongitude,
             LocalDateTime startedTime,
-            LocalDateTime endedTime
+            LocalDateTime endedTime,
+            long totalTime,
+            double pace
     ) {
         this.user = user;
         this.pathGeoJson = pathGeoJson;
@@ -75,5 +82,7 @@ public class RunningRecord {
         this.endLongitude = endLongitude;
         this.startedTime = startedTime;
         this.endedTime = endedTime;
+        this.totalTime = totalTime;
+        this.pace = pace;
     }
 }
