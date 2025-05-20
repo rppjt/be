@@ -5,12 +5,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
+import java.time.Duration;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RunningRecordService {
@@ -18,10 +23,30 @@ public class RunningRecordService {
     private final UserService userService;
 
     @Transactional
-    public void save(RunningRecordRequest request) throws JsonProcessingException {
-        User user = userService.findUserByEmail(request.email());
-    }
+    public void save(RunningRecordRequest request, String email) throws JsonProcessingException {
+        User user = userService.findUserByEmail(email);
 
+        double totalDistance = calculateTotalDistance(request.pathGeoJson());
+        long totalTime = Duration.between(request.startedTime(), request.endedTime()).getSeconds();
+        double pace = Math.round(((double) totalTime / 60) / (totalDistance / 1000) * 100) / 100.0;
+
+        RunningRecord runningRecord = RunningRecord.builder()
+                .user(user)
+                .pathGeoJson(request.pathGeoJson())
+                .totalDistance(totalDistance)
+                .startLatitude(request.startLatitude())
+                .startLongitude(request.startLongitude())
+                .endLatitude(request.endLatitude())
+                .endLongitude(request.endLongitude())
+                .startedTime(request.startedTime())
+                .endedTime(request.endedTime())
+                .totalTime(totalTime)
+                .pace(pace)
+                .build();
+
+        log.info("러닝 기록 저장 완료 : {}", email);
+        runningRecordRepository.save(runningRecord);
+    }
 
     private double calculateTotalDistance(String pathGeoJson) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
