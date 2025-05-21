@@ -64,6 +64,19 @@ public class RunningRecordService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public RunningRecord validateRunningRecord(Long recordId, String email) {
+        RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("기록이 존재하지 않거나 삭제되었습니다."));
+
+        if (!runningRecord.getUser().getEmail().equals(email)) {
+            throw new IllegalArgumentException("본인의 기록만 추천할 수 있습니다.");
+        }
+
+        return runningRecord;
+    }
+
+
     private double calculateTotalDistance(String pathGeoJson) {
         try{
             ObjectMapper mapper = new ObjectMapper();
