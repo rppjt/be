@@ -1,19 +1,21 @@
 package runrush.be.runningrecord.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import runrush.be.runningrecord.domain.RunningRecord;
+import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
+import runrush.be.runningrecord.dto.RunningRecordResponse;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -23,7 +25,7 @@ public class RunningRecordService {
     private final UserService userService;
 
     @Transactional
-    public void save(RunningRecordRequest request, String email) throws JsonProcessingException {
+    public void saveRunningRecord(RunningRecordRequest request, String email) {
         User user = userService.findUserByEmail(email);
 
         double totalDistance = calculateTotalDistance(request.pathGeoJson());
@@ -48,26 +50,44 @@ public class RunningRecordService {
         runningRecordRepository.save(runningRecord);
     }
 
-    private double calculateTotalDistance(String pathGeoJson) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(pathGeoJson);
-        JsonNode coordinates = jsonNode.get("coordinates");
+    @Transactional(readOnly = true)
+    public RunningRecordResponse getRunningRecord(Long recordId) {
+        RunningRecord runningRecord = runningRecordRepository.findById(recordId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 기록입니다."));
+        return RunningRecordResponse.toRecordResponse(runningRecord);
+    }
 
-        double totalDistance = 0.0;
+    @Transactional(readOnly = true)
+    public List<RunningRecordListResponse> getRunningRecords(String email) {
+        return runningRecordRepository.findByUserEmail(email).stream()
+                .map(RunningRecordListResponse::toRecordListResponse)
+                .toList();
+    }
 
-        for (int i = 1; i < coordinates.size(); i++) {
-            JsonNode prev = coordinates.get(i - 1);
-            JsonNode curr = coordinates.get(i);
+    private double calculateTotalDistance(String pathGeoJson) {
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(pathGeoJson);
+            JsonNode coordinates = jsonNode.get("coordinates");
 
-            double lon1 = prev.get(0).asDouble();
-            double lat1 = prev.get(1).asDouble();
-            double lon2 = curr.get(0).asDouble();
-            double lat2 = curr.get(1).asDouble();
+            double totalDistance = 0.0;
 
-            totalDistance += haversine(lat1, lon1, lat2, lon2);
+            for (int i = 1; i < coordinates.size(); i++) {
+                JsonNode prev = coordinates.get(i - 1);
+                JsonNode curr = coordinates.get(i);
+
+                double lon1 = prev.get(0).asDouble();
+                double lat1 = prev.get(1).asDouble();
+                double lon2 = curr.get(0).asDouble();
+                double lat2 = curr.get(1).asDouble();
+
+                totalDistance += haversine(lat1, lon1, lat2, lon2);
+            }
+            return totalDistance;
+        } catch (Exception e) {
+            log.error("GeoJSON 파싱 오류: {}", e.getMessage());
+            throw new RuntimeException("경로 정보를 처리하는 중 오류가 발생했습니다", e);
         }
-
-        return totalDistance;
     }
 
     private double haversine(double lat1, double lon1, double lat2, double lon2) {
