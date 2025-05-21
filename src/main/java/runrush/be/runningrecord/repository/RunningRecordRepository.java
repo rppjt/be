@@ -5,8 +5,12 @@ import org.springframework.stereotype.Repository;
 import runrush.be.runningrecord.domain.RunningRecord;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
     List<RunningRecord> findByUserEmail(String email);
+
+    Optional<RunningRecord> findByIdAndIsDeletedFalse(Long id);
+
 }
