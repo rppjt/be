@@ -29,4 +29,11 @@ public class RecommendedCourseController {
         recommendedCourseService.updateRecommendedCourse(courseId, user.getEmail(), request);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{courseId}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId,
+                                             @AuthenticationPrincipal UserPrincipal user) {
+        recommendedCourseService.deleteRecommendedCourse(courseId, user.getEmail());
+        return ResponseEntity.noContent().build();
+    }
 }
