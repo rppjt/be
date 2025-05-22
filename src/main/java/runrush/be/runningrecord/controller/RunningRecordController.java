@@ -1,6 +1,7 @@
 package runrush.be.runningrecord.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class RunningRecordController {
     public ResponseEntity<Void> createRunningRecord(@AuthenticationPrincipal UserPrincipal user,
                                                     @RequestBody RunningRecordRequest request) {
         runningRecordService.saveRunningRecord(request, user.getEmail());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping
