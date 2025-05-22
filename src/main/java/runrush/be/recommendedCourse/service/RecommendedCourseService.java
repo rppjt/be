@@ -2,7 +2,9 @@ package runrush.be.recommendedCourse.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.service.RunningRecordService;
@@ -13,6 +15,7 @@ public class RecommendedCourseService {
     private final RecommendedCourseRepository recommendedCourseRepository;
     private final RunningRecordService runningRecordService;
 
+    @Transactional
     public void createRecommendedCourse(Long recordId, String email, String name) {
         RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, email);
 
@@ -33,5 +36,23 @@ public class RecommendedCourseService {
                 .build();
 
         recommendedCourseRepository.save(course);
+    }
+
+    @Transactional
+    public void updateRecommendedCourse(Long courseId, String email, RecommendedCourseUpdateRequest request) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+
+        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
+        }
+
+        if(request.title() != null && !request.title().isBlank()) {
+            recommendedCourse.changeTitle(request.title());
+        }
+
+        if(request.description() != null) {
+            recommendedCourse.changeDescription(request.description());
+        }
     }
 }
