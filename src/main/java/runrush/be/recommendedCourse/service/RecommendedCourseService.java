@@ -55,4 +55,16 @@ public class RecommendedCourseService {
             recommendedCourse.changeDescription(request.description());
         }
     }
+
+    @Transactional
+    public void deleteRecommendedCourse(Long courseId, String email) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+
+        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
+        }
+
+        recommendedCourseRepository.deleteById(courseId);
+    }
 }
