@@ -1,13 +1,12 @@
 package runrush.be.recommendedCourse.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
+import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.service.RecommendedCourseService;
 
 @RestController
@@ -16,11 +15,18 @@ import runrush.be.recommendedCourse.service.RecommendedCourseService;
 public class RecommendedCourseController {
     private final RecommendedCourseService recommendedCourseService;
 
-    @PostMapping("/{recordId}")
-    public ResponseEntity<Void> createCourse(@PathVariable Long recordId,
+    @PostMapping("/{courseId}")
+    public ResponseEntity<Void> createCourse(@PathVariable Long courseId,
                                           @AuthenticationPrincipal UserPrincipal user) {
+        recommendedCourseService.createRecommendedCourse(courseId, user.getEmail(), user.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 
-        recommendedCourseService.createRecommendedCourse(recordId, user.getEmail(), user.getName());
-        return ResponseEntity.ok().build();
+    @PatchMapping("/{courseId}")
+    public ResponseEntity<Void> updateCourse(@PathVariable Long courseId,
+                                             @AuthenticationPrincipal UserPrincipal user,
+                                             @RequestBody RecommendedCourseUpdateRequest request) {
+        recommendedCourseService.updateRecommendedCourse(courseId, user.getEmail(), request);
+        return ResponseEntity.noContent().build();
     }
 }
