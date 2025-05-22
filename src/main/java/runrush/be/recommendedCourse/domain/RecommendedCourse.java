@@ -70,4 +70,12 @@ public class RecommendedCourse {
         this.latitude = latitude;
         this.longitude = longitude;
     }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeDescription(String description) {
+        this.description = description;
+    }
 }
