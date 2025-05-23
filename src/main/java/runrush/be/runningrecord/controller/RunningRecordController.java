@@ -33,8 +33,16 @@ public class RunningRecordController {
     }
 
     @GetMapping("/{recordId}")
-    public ResponseEntity<RunningRecordResponse> getRunningRecord(@PathVariable Long recordId) {
-        RunningRecordResponse runningRecord = runningRecordService.getRunningRecord(recordId);
+    public ResponseEntity<RunningRecordResponse> getRunningRecord(@PathVariable Long recordId,
+                                                                  @AuthenticationPrincipal UserPrincipal user) {
+        RunningRecordResponse runningRecord = runningRecordService.getRunningRecord(recordId, user.getEmail());
         return ResponseEntity.ok(runningRecord);
+    }
+
+    @DeleteMapping("/{recordId}")
+    public ResponseEntity<Void> deleteRunningRecord(@PathVariable Long recordId,
+                                                    @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.deleteRunningRecord(recordId, user.getEmail());
+        return ResponseEntity.noContent().build();
     }
 }
