@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
@@ -83,16 +84,16 @@ public class RecommendedCourseService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseResponse> getUserRecommendedCourses(String email) {
+    public List<RecommendedCourseListResponse> getUserRecommendedCourses(String email) {
         return recommendedCourseRepository.findByUserEmailAndIsDeletedFalse(email).stream()
-                .map(RecommendedCourseResponse::toCourseResponse)
+                .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseResponse> getRecommendedCourses() {
+    public List<RecommendedCourseListResponse> getRecommendedCourses() {
         return recommendedCourseRepository.findAllByIsDeletedFalse().stream()
-                .map(RecommendedCourseResponse::toCourseResponse)
+                .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
 }
