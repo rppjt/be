@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.service.RunningRecordService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,6 @@ public class RecommendedCourseService {
                 .description("")
                 .pathGeoJson(runningRecord.getPathGeoJson())
                 .totalDistance(runningRecord.getTotalDistance())
-                .pace(runningRecord.getPace())
                 .latitude(runningRecord.getStartLatitude())
                 .longitude(runningRecord.getStartLongitude())
                 .build();
@@ -40,7 +42,7 @@ public class RecommendedCourseService {
 
     @Transactional
     public void updateRecommendedCourse(Long courseId, String email, RecommendedCourseUpdateRequest request) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
         if(!(recommendedCourse.getUser().getEmail().equals(email))) {
@@ -58,13 +60,39 @@ public class RecommendedCourseService {
 
     @Transactional
     public void deleteRecommendedCourse(Long courseId, String email) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
         if(!(recommendedCourse.getUser().getEmail().equals(email))) {
             throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
         }
 
-        recommendedCourseRepository.deleteById(courseId);
+        recommendedCourse.delete();
+    }
+
+    @Transactional(readOnly = true)
+    public RecommendedCourseResponse getRecommendedCourse(Long courseId, String email) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+
+        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
+        }
+
+        return RecommendedCourseResponse.toCourseResponse(recommendedCourse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecommendedCourseResponse> getUserRecommendedCourses(String email) {
+        return recommendedCourseRepository.findByUserEmailAndIsDeletedFalse(email).stream()
+                .map(RecommendedCourseResponse::toCourseResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecommendedCourseResponse> getRecommendedCourses() {
+        return recommendedCourseRepository.findAllByIsDeletedFalse().stream()
+                .map(RecommendedCourseResponse::toCourseResponse)
+                .toList();
     }
 }
