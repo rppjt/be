@@ -1,14 +1,15 @@
 package runrush.be.runningrecord.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import runrush.be.auth.model.UserPrincipal;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
 import runrush.be.runningrecord.dto.RunningRecordResponse;
 import runrush.be.runningrecord.service.RunningRecordService;
-import runrush.be.user.domain.User;
 
 import java.util.List;
 
@@ -19,21 +20,29 @@ public class RunningRecordController {
     private final RunningRecordService runningRecordService;
 
     @PostMapping
-    public ResponseEntity<Void> createRunningRecord(@AuthenticationPrincipal User user,
-                                                             @RequestBody RunningRecordRequest request) {
+    public ResponseEntity<Void> createRunningRecord(@AuthenticationPrincipal UserPrincipal user,
+                                                    @RequestBody RunningRecordRequest request) {
         runningRecordService.saveRunningRecord(request, user.getEmail());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping
-    public ResponseEntity<List<RunningRecordListResponse>> getRunningRecords(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<RunningRecordListResponse>> getRunningRecords(@AuthenticationPrincipal UserPrincipal user) {
         List<RunningRecordListResponse> runningRecords = runningRecordService.getRunningRecords(user.getEmail());
         return ResponseEntity.ok(runningRecords);
     }
 
     @GetMapping("/{recordId}")
-    public ResponseEntity<RunningRecordResponse> getRunningRecord(@PathVariable Long recordId) {
-        RunningRecordResponse runningRecord = runningRecordService.getRunningRecord(recordId);
+    public ResponseEntity<RunningRecordResponse> getRunningRecord(@PathVariable Long recordId,
+                                                                  @AuthenticationPrincipal UserPrincipal user) {
+        RunningRecordResponse runningRecord = runningRecordService.getRunningRecord(recordId, user.getEmail());
         return ResponseEntity.ok(runningRecord);
+    }
+
+    @DeleteMapping("/{recordId}")
+    public ResponseEntity<Void> deleteRunningRecord(@PathVariable Long recordId,
+                                                    @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.deleteRunningRecord(recordId, user.getEmail());
+        return ResponseEntity.noContent().build();
     }
 }

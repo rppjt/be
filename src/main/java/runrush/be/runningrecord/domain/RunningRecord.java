@@ -59,6 +59,9 @@ public class RunningRecord {
 
     private double pace;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @Builder
     public RunningRecord(
             User user,
@@ -84,5 +87,13 @@ public class RunningRecord {
         this.endedTime = endedTime;
         this.totalTime = totalTime;
         this.pace = pace;
+    }
+
+    public void recordDeleted() {
+        this.isDeleted = true;
+    }
+
+    public boolean isRecordDeleted() {
+        return isDeleted;
     }
 }

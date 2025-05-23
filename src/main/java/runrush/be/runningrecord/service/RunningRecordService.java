@@ -46,23 +46,48 @@ public class RunningRecordService {
                 .pace(pace)
                 .build();
 
-        log.info("러닝 기록 저장 완료 : {}", email);
         runningRecordRepository.save(runningRecord);
+        log.info("러닝 기록 저장 완료 : {}", email);
     }
 
     @Transactional(readOnly = true)
-    public RunningRecordResponse getRunningRecord(Long recordId) {
-        RunningRecord runningRecord = runningRecordRepository.findById(recordId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 기록입니다."));
+    public RunningRecordResponse getRunningRecord(Long recordId, String email) {
+        RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 기록입니다."));
+
+        if (!runningRecord.getUser().getEmail().equals(email)) {
+            throw new IllegalArgumentException("본인의 기록만 조회할 수 있습니다.");
+        }
+
         return RunningRecordResponse.toRecordResponse(runningRecord);
     }
 
     @Transactional(readOnly = true)
     public List<RunningRecordListResponse> getRunningRecords(String email) {
-        return runningRecordRepository.findByUserEmail(email).stream()
+        return runningRecordRepository.findByUserEmailAndIsDeletedFalse(email).stream()
                 .map(RunningRecordListResponse::toRecordListResponse)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public RunningRecord validateRunningRecord(Long recordId, String email) {
+        RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("기록이 존재하지 않거나 삭제되었습니다."));
+
+        if (!runningRecord.getUser().getEmail().equals(email)) {
+            throw new IllegalArgumentException("본인의 기록만 추천할 수 있습니다.");
+        }
+
+        return runningRecord;
+    }
+
+    @Transactional
+    public void deleteRunningRecord(Long recordId, String email) {
+        RunningRecord runningRecord = validateRunningRecord(recordId, email);
+        runningRecord.recordDeleted();
+        log.info("러닝 기록 삭제 완료: recordId={}, email={}", recordId, email);
+    }
+
 
     private double calculateTotalDistance(String pathGeoJson) {
         try{
