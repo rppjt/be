@@ -40,8 +40,6 @@ public class RecommendedCourse {
     @Column(name = "total_distance")
     private double totalDistance;
 
-    private double pace;
-
     private double latitude;
 
     private double longitude;
@@ -50,6 +48,9 @@ public class RecommendedCourse {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @Builder
     public RecommendedCourse(User user,
                              RunningRecord runningRecord,
@@ -57,7 +58,6 @@ public class RecommendedCourse {
                              String description,
                              String pathGeoJson,
                              double totalDistance,
-                             double pace,
                              double latitude,
                              double longitude) {
         this.user = user;
@@ -66,7 +66,6 @@ public class RecommendedCourse {
         this.description = description;
         this.pathGeoJson = pathGeoJson;
         this.totalDistance = totalDistance;
-        this.pace = pace;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -77,5 +76,9 @@ public class RecommendedCourse {
 
     public void changeDescription(String description) {
         this.description = description;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }
