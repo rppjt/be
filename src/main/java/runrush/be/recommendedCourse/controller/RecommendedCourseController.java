@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
+import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.service.RecommendedCourseService;
@@ -48,13 +49,13 @@ public class RecommendedCourseController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<RecommendedCourseResponse>> getUserRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
-        List<RecommendedCourseResponse> userRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getEmail());
+    public ResponseEntity<List<RecommendedCourseListResponse>> getUserRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
+        List<RecommendedCourseListResponse> userRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getEmail());
         return ResponseEntity.ok().body(userRecommendedCourses);
     }
 
     @GetMapping
-    public ResponseEntity<List<RecommendedCourseResponse>> getRecommendedCourses() {
+    public ResponseEntity<List<RecommendedCourseListResponse>> getRecommendedCourses() {
         return ResponseEntity.ok().body(recommendedCourseService.getRecommendedCourses());
     }
 }
