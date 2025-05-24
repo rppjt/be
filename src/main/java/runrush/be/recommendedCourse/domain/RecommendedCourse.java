@@ -25,9 +25,8 @@ public class RecommendedCourse {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @JoinColumn(name = "running_record_id")
-    @OneToOne(fetch = FetchType.LAZY)
-    private RunningRecord runningRecord;
+    @Column(name = "source_record_id")
+    private Long sourceRecordId;
 
     private String title;
 
@@ -48,12 +47,9 @@ public class RecommendedCourse {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
-
     @Builder
     public RecommendedCourse(User user,
-                             RunningRecord runningRecord,
+                             Long sourceRecordId,
                              String title,
                              String description,
                              String pathGeoJson,
@@ -61,7 +57,7 @@ public class RecommendedCourse {
                              double latitude,
                              double longitude) {
         this.user = user;
-        this.runningRecord = runningRecord;
+        this.sourceRecordId = sourceRecordId;
         this.title = title;
         this.description = description;
         this.pathGeoJson = pathGeoJson;
@@ -76,9 +72,5 @@ public class RecommendedCourse {
 
     public void changeDescription(String description) {
         this.description = description;
-    }
-
-    public void delete() {
-        this.isDeleted = true;
     }
 }
