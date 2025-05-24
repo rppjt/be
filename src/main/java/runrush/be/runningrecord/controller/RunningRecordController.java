@@ -22,13 +22,13 @@ public class RunningRecordController {
     @PostMapping
     public ResponseEntity<Void> createRunningRecord(@AuthenticationPrincipal UserPrincipal user,
                                                     @RequestBody RunningRecordRequest request) {
-        runningRecordService.saveRunningRecord(request, user.getEmail());
+        runningRecordService.saveRunningRecord(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping
     public ResponseEntity<List<RunningRecordListResponse>> getRunningRecords(@AuthenticationPrincipal UserPrincipal user) {
-        List<RunningRecordListResponse> runningRecords = runningRecordService.getRunningRecords(user.getEmail());
+        List<RunningRecordListResponse> runningRecords = runningRecordService.getRunningRecords(user.getId());
         return ResponseEntity.ok(runningRecords);
     }
 
@@ -42,7 +42,7 @@ public class RunningRecordController {
     @DeleteMapping("/{recordId}")
     public ResponseEntity<Void> deleteRunningRecord(@PathVariable Long recordId,
                                                     @AuthenticationPrincipal UserPrincipal user) {
-        runningRecordService.deleteRunningRecord(recordId, user.getEmail());
+        runningRecordService.deleteRunningRecord(recordId, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

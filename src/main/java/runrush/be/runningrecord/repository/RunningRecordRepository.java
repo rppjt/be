@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
     Optional<RunningRecord> findByIdAndIsDeletedFalse(Long id);
-    List<RunningRecord> findByUserEmailAndIsDeletedFalse(String email);
+    List<RunningRecord> findByUserIdAndIsDeletedFalse(Long userId);
 }
