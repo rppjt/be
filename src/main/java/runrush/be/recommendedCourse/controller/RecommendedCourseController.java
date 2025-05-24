@@ -22,7 +22,7 @@ public class RecommendedCourseController {
     @PostMapping("/{courseId}")
     public ResponseEntity<Void> createCourse(@PathVariable Long courseId,
                                              @AuthenticationPrincipal UserPrincipal user) {
-        recommendedCourseService.createRecommendedCourse(courseId, user.getEmail(), user.getName());
+        recommendedCourseService.createRecommendedCourse(courseId, user.getId(), user.getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -30,27 +30,27 @@ public class RecommendedCourseController {
     public ResponseEntity<Void> updateCourse(@PathVariable Long courseId,
                                              @AuthenticationPrincipal UserPrincipal user,
                                              @RequestBody RecommendedCourseUpdateRequest request) {
-        recommendedCourseService.updateRecommendedCourse(courseId, user.getEmail(), request);
+        recommendedCourseService.updateRecommendedCourse(courseId, user.getId(), request);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{courseId}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId,
                                              @AuthenticationPrincipal UserPrincipal user) {
-        recommendedCourseService.deleteRecommendedCourse(courseId, user.getEmail());
+        recommendedCourseService.deleteRecommendedCourse(courseId, user.getId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{courseId}")
     public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId,
                                                                @AuthenticationPrincipal UserPrincipal user) {
-        recommendedCourseService.getRecommendedCourse(courseId, user.getEmail());
-        return ResponseEntity.ok().build();
+        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourse(courseId, user.getId());
+        return ResponseEntity.ok().body(recommendedCourse);
     }
 
     @GetMapping("/user")
     public ResponseEntity<List<RecommendedCourseListResponse>> getUserRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
-        List<RecommendedCourseListResponse> userRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getEmail());
+        List<RecommendedCourseListResponse> userRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getId());
         return ResponseEntity.ok().body(userRecommendedCourses);
     }
 

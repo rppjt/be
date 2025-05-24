@@ -23,7 +23,7 @@ public class UserController {
             return ResponseEntity.status(401).build();
         }
 
-        User userByEmail = userService.findUserByEmail(user.getEmail());
+        User userByEmail = userService.findUserById(user.getId());
         UserInfoResponse userInfoResponse = UserInfoResponse.fromEntity(userByEmail);
         return ResponseEntity.ok(userInfoResponse);
     }

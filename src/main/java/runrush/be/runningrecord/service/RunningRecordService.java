@@ -14,6 +14,8 @@ import runrush.be.runningrecord.repository.RunningRecordRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.List;
 
@@ -25,12 +27,19 @@ public class RunningRecordService {
     private final UserService userService;
 
     @Transactional
-    public void saveRunningRecord(RunningRecordRequest request, String email) {
-        User user = userService.findUserByEmail(email);
+    public void saveRunningRecord(RunningRecordRequest request, Long userId) {
+        User user = userService.findUserById(userId);
 
         double totalDistance = calculateTotalDistance(request.pathGeoJson());
         long totalTime = Duration.between(request.startedTime(), request.endedTime()).getSeconds();
-        double pace = Math.round(((double) totalTime / 60) / (totalDistance / 1000) * 100) / 100.0;
+
+        BigDecimal minutes = BigDecimal.valueOf(totalTime)
+                .divide(BigDecimal.valueOf(60), 10, RoundingMode.HALF_UP);
+        BigDecimal kilometers = BigDecimal.valueOf(totalDistance)
+                .divide(BigDecimal.valueOf(1000), 10, RoundingMode.HALF_UP);
+
+        BigDecimal paceDecimal = minutes.divide(kilometers, 2, RoundingMode.HALF_UP);
+        double pace = paceDecimal.doubleValue();
 
         RunningRecord runningRecord = RunningRecord.builder()
                 .user(user)
@@ -47,7 +56,7 @@ public class RunningRecordService {
                 .build();
 
         runningRecordRepository.save(runningRecord);
-        log.info("러닝 기록 저장 완료 : {}", email);
+        log.info("러닝 기록 저장 완료");
     }
 
     @Transactional(readOnly = true)
@@ -63,18 +72,18 @@ public class RunningRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<RunningRecordListResponse> getRunningRecords(String email) {
-        return runningRecordRepository.findByUserEmailAndIsDeletedFalse(email).stream()
+    public List<RunningRecordListResponse> getRunningRecords(Long userId) {
+        return runningRecordRepository.findByUserIdAndIsDeletedFalse(userId).stream()
                 .map(RunningRecordListResponse::toRecordListResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public RunningRecord validateRunningRecord(Long recordId, String email) {
+    public RunningRecord validateRunningRecord(Long recordId, Long userId) {
         RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("기록이 존재하지 않거나 삭제되었습니다."));
 
-        if (!runningRecord.getUser().getEmail().equals(email)) {
+        if (!runningRecord.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인의 기록만 추천할 수 있습니다.");
         }
 
@@ -82,18 +91,27 @@ public class RunningRecordService {
     }
 
     @Transactional
-    public void deleteRunningRecord(Long recordId, String email) {
-        RunningRecord runningRecord = validateRunningRecord(recordId, email);
+    public void deleteRunningRecord(Long recordId, Long userId) {
+        RunningRecord runningRecord = validateRunningRecord(recordId, userId);
         runningRecord.recordDeleted();
-        log.info("러닝 기록 삭제 완료: recordId={}, email={}", recordId, email);
+        log.info("러닝 기록 삭제 완료: recordId={}", recordId);
     }
 
 
     private double calculateTotalDistance(String pathGeoJson) {
-        try{
+        try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(pathGeoJson);
+
+            String type = jsonNode.get("type").asText();
+            if (!"LineString".equals(type)) {
+                throw new IllegalArgumentException("잘못된 경로 형식입니다. LineString 형식이어야 합니다.");
+            }
+
             JsonNode coordinates = jsonNode.get("coordinates");
+            if (coordinates == null || !coordinates.isArray() || coordinates.size() < 2) {
+                throw new IllegalArgumentException("경로 좌표가 올바르지 않습니다.");
+            }
 
             double totalDistance = 0.0;
 

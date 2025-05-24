@@ -20,10 +20,10 @@ public class RecommendedCourseService {
     private final RunningRecordService runningRecordService;
 
     @Transactional
-    public void createRecommendedCourse(Long recordId, String email, String name) {
-        RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, email);
+    public void createRecommendedCourse(Long recordId, Long userId, String name) {
+        RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, userId);
 
-        if (recommendedCourseRepository.existsByRunningRecord(runningRecord)) {
+        if (recommendedCourseRepository.existsBySourceRecordId(recordId)) {
             throw new IllegalArgumentException("이미 추천된 기록입니다.");
         }
 
@@ -34,19 +34,19 @@ public class RecommendedCourseService {
                 .description("")
                 .pathGeoJson(runningRecord.getPathGeoJson())
                 .totalDistance(runningRecord.getTotalDistance())
-                .latitude(runningRecord.getStartLatitude())
-                .longitude(runningRecord.getStartLongitude())
+                .latitude(runningRecord.getEndLatitude())
+                .longitude(runningRecord.getEndLongitude())
                 .build();
 
         recommendedCourseRepository.save(course);
     }
 
     @Transactional
-    public void updateRecommendedCourse(Long courseId, String email, RecommendedCourseUpdateRequest request) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
+    public void updateRecommendedCourse(Long courseId, Long userId, RecommendedCourseUpdateRequest request) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+        if(!(recommendedCourse.getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
         }
 
@@ -60,23 +60,23 @@ public class RecommendedCourseService {
     }
 
     @Transactional
-    public void deleteRecommendedCourse(Long courseId, String email) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
+    public void deleteRecommendedCourse(Long courseId, Long userId) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+        if(!(recommendedCourse.getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
         }
 
-        recommendedCourse.delete();
+        recommendedCourseRepository.delete(recommendedCourse);
     }
 
     @Transactional(readOnly = true)
-    public RecommendedCourseResponse getRecommendedCourse(Long courseId, String email) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByIdAndIsDeletedFalse(courseId)
+    public RecommendedCourseResponse getRecommendedCourse(Long courseId, Long userId) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        if(!(recommendedCourse.getUser().getEmail().equals(email))) {
+        if(!(recommendedCourse.getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
         }
 
@@ -84,15 +84,15 @@ public class RecommendedCourseService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseListResponse> getUserRecommendedCourses(String email) {
-        return recommendedCourseRepository.findByUserEmailAndIsDeletedFalse(email).stream()
+    public List<RecommendedCourseListResponse> getUserRecommendedCourses(Long userId) {
+        return recommendedCourseRepository.findByUserId(userId).stream()
                 .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<RecommendedCourseListResponse> getRecommendedCourses() {
-        return recommendedCourseRepository.findAllByIsDeletedFalse().stream()
+        return recommendedCourseRepository.findAll().stream()
                 .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
