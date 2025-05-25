@@ -39,4 +39,9 @@ public class User {
         this.level = Level.BEGINNER;
         this.experiencePoints = 0;
     }
+
+    public void addExperiencePoints(int points) {
+        this.experiencePoints += points;
+        this.level = Level.fromExperiencePoints(experiencePoints);
+    }
 }
