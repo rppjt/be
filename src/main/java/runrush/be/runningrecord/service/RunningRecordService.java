@@ -33,6 +33,9 @@ public class RunningRecordService {
         double totalDistance = calculateTotalDistance(request.pathGeoJson());
         long totalTime = Duration.between(request.startedTime(), request.endedTime()).getSeconds();
 
+        int exp = (int) (totalDistance / 10);
+        user.addExperiencePoints(exp);
+
         BigDecimal minutes = BigDecimal.valueOf(totalTime)
                 .divide(BigDecimal.valueOf(60), 10, RoundingMode.HALF_UP);
         BigDecimal kilometers = BigDecimal.valueOf(totalDistance)
