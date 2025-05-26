@@ -6,12 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.coursebookmark.domain.CourseBookmark;
 import runrush.be.coursebookmark.dto.BookmarkToggleResponse;
+import runrush.be.coursebookmark.dto.BookmarkedCourseListResponse;
 import runrush.be.coursebookmark.repository.CourseBookmarkRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -48,5 +50,12 @@ public class CourseBookmarkService {
 
             return BookmarkToggleResponse.unbookmarked();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookmarkedCourseListResponse> getBookmarkedCourses(Long userId) {
+        return courseBookmarkRepository.findByUserId(userId).stream()
+                .map(course -> BookmarkedCourseListResponse.toBookmarkedCourseListResponse(course.getRecommendedCourse(), course.getId()))
+                .toList();
     }
 }
