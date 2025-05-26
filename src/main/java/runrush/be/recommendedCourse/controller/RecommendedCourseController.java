@@ -42,9 +42,8 @@ public class RecommendedCourseController {
     }
 
     @GetMapping("/{courseId}")
-    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId,
-                                                               @AuthenticationPrincipal UserPrincipal user) {
-        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourse(courseId, user.getId());
+    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId) {
+        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourse(courseId);
         return ResponseEntity.ok().body(recommendedCourse);
     }
 
