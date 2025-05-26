@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface CourseBookmarkRepository extends JpaRepository<CourseBookmark, Long> {
-    Optional<CourseBookmark> findByUserIdAndCourseId(Long userId, Long courseId);
+    Optional<CourseBookmark> findByUserIdAndRecommendedCourseId(Long userId, Long courseId);
     List<CourseBookmark> findByUserId(Long userId);
 }
