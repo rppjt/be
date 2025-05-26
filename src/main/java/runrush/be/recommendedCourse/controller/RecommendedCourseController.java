@@ -42,20 +42,20 @@ public class RecommendedCourseController {
     }
 
     @GetMapping("/{courseId}")
-    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId,
-                                                               @AuthenticationPrincipal UserPrincipal user) {
-        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourse(courseId, user.getId());
+    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId) {
+        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourse(courseId);
         return ResponseEntity.ok().body(recommendedCourse);
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<List<RecommendedCourseListResponse>> getUserRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
-        List<RecommendedCourseListResponse> userRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getId());
-        return ResponseEntity.ok().body(userRecommendedCourses);
+    @GetMapping("/my")
+    public ResponseEntity<List<RecommendedCourseListResponse>> getMyRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
+        List<RecommendedCourseListResponse> myRecommendedCourses = recommendedCourseService.getUserRecommendedCourses(user.getId());
+        return ResponseEntity.ok().body(myRecommendedCourses);
     }
 
     @GetMapping
-    public ResponseEntity<List<RecommendedCourseListResponse>> getRecommendedCourses() {
-        return ResponseEntity.ok().body(recommendedCourseService.getRecommendedCourses());
+    public ResponseEntity<List<RecommendedCourseListResponse>> getAllRecommendedCourses() {
+        List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses();
+        return ResponseEntity.ok().body(recommendedCourses);
     }
 }

@@ -65,20 +65,16 @@ public class RecommendedCourseService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
         if(!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
+            throw new IllegalArgumentException("등록한 사용자만 삭제 가능합니다.");
         }
 
         recommendedCourseRepository.delete(recommendedCourse);
     }
 
     @Transactional(readOnly = true)
-    public RecommendedCourseResponse getRecommendedCourse(Long courseId, Long userId) {
+    public RecommendedCourseResponse getRecommendedCourse(Long courseId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
-
-        if(!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
-        }
 
         return RecommendedCourseResponse.toCourseResponse(recommendedCourse);
     }
