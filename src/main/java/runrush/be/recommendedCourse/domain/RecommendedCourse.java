@@ -24,6 +24,9 @@ public class RecommendedCourse {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @Column(name = "source_record_id", unique = true)
+    private Long sourceRecordId;
+
     private String title;
 
     private String description;
@@ -45,6 +48,7 @@ public class RecommendedCourse {
 
     @Builder
     public RecommendedCourse(User user,
+                             Long sourceRecordId,
                              String title,
                              String description,
                              String pathGeoJson,
@@ -52,6 +56,7 @@ public class RecommendedCourse {
                              double latitude,
                              double longitude) {
         this.user = user;
+        this.sourceRecordId = sourceRecordId;
         this.title = title;
         this.description = description;
         this.pathGeoJson = pathGeoJson;
