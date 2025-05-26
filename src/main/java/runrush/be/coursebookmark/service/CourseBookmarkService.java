@@ -34,7 +34,7 @@ public class CourseBookmarkService {
             throw new IllegalArgumentException("본인이 등록한 코스는 즐겨찾기 할 수 없습니다.");
         }
 
-        Optional<CourseBookmark> existsBookmark = courseBookmarkRepository.findByUserIdAndCourseId(userId, courseId);
+        Optional<CourseBookmark> existsBookmark = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
         if (existsBookmark.isPresent()) {
             courseBookmarkRepository.delete(existsBookmark.get());
             log.info("북마크 해제: courseId={}", courseId);
