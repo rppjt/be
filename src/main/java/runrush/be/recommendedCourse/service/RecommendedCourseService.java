@@ -30,7 +30,9 @@ public class RecommendedCourseService {
         String title = name + "님의 추천 코스 #" + recordId;
 
         RecommendedCourse course = RecommendedCourse.builder()
+                .user(runningRecord.getUser())
                 .title(title)
+                .sourceRecordId(recordId)
                 .description("")
                 .pathGeoJson(runningRecord.getPathGeoJson())
                 .totalDistance(runningRecord.getTotalDistance())
@@ -46,15 +48,15 @@ public class RecommendedCourseService {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        if(!(recommendedCourse.getUser().getId().equals(userId))) {
+        if (!(recommendedCourse.getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
         }
 
-        if(request.title() != null && !request.title().isBlank()) {
+        if (request.title() != null && !request.title().isBlank()) {
             recommendedCourse.changeTitle(request.title());
         }
 
-        if(request.description() != null) {
+        if (request.description() != null) {
             recommendedCourse.changeDescription(request.description());
         }
     }
@@ -64,7 +66,7 @@ public class RecommendedCourseService {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        if(!(recommendedCourse.getUser().getId().equals(userId))) {
+        if (!(recommendedCourse.getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("등록한 사용자만 삭제 가능합니다.");
         }
 
