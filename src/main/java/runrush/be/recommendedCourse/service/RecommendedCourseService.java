@@ -72,7 +72,7 @@ public class RecommendedCourseService {
     }
 
     @Transactional(readOnly = true)
-    public RecommendedCourseResponse getRecommendedCourse(Long courseId, Long userId) {
+    public RecommendedCourseResponse getRecommendedCourse(Long courseId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
