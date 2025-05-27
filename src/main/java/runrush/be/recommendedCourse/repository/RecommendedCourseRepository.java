@@ -1,14 +1,29 @@
 package runrush.be.recommendedCourse.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RecommendedCourseRepository extends JpaRepository<RecommendedCourse, Long> {
     boolean existsBySourceRecordId(Long sourceRecordId);
 
-    List<RecommendedCourse> findByUserId(Long userId);
+    @Query("SELECT rc FROM RecommendedCourse rc " +
+            "JOIN FETCH rc.user " +
+            "WHERE rc.user.id = :userId")
+    List<RecommendedCourse> findWithUserByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT rc FROM RecommendedCourse rc " +
+            "JOIN FETCH rc.user ")
+    List<RecommendedCourse> findAllWithUser();
+
+    @Query("SELECT rc FROM RecommendedCourse rc " +
+            "JOIN FETCH rc.user " +
+            "WHERE rc.id = :courseId")
+    Optional<RecommendedCourse> findByCourseId(@Param("courseId") Long courseId);
 }
