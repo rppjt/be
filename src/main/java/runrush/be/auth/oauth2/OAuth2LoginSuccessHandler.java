@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import runrush.be.auth.model.UserPrincipal;
 import runrush.be.auth.service.AuthService;
 
@@ -21,22 +23,33 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
 
+    @Value("${app.oauth2.redirect-uri}")
+    private String redirectUri;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("OAuth2 로그인 성공");
+        try {
 
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String email = userPrincipal.getEmail();
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            String email = userPrincipal.getEmail();
 
-        authService.setRefreshTokenCookie(email, response);
-        String accessToken = authService.generateAccessToken(email);
+            authService.setRefreshTokenCookie(email, response);
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String json = String.format("{\"accessToken\": \"%s\", \"tokenType\": \"Bearer\"}", accessToken);
-        response.getWriter().write(json);
+            String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("success", true)
+                    .build().toUriString();
 
-        log.info("OAuth2 로그인 성공 처리 완료");
+            response.sendRedirect(targetUrl);
+
+            log.info("OAuth2 로그인 성공 - 리다이렉트: {}", targetUrl);
+
+        } catch (Exception e) {
+            log.error("OAuth2 로그인 처리 중 오류 발생", e);
+            String errorUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("success", false)
+                    .build().toUriString();
+
+            response.sendRedirect(errorUrl);
+        }
     }
 }
