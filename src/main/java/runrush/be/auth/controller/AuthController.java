@@ -7,11 +7,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import runrush.be.auth.domain.RefreshToken;
 import runrush.be.auth.service.AuthService;
+import runrush.be.auth.service.RefreshTokenService;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
@@ -21,6 +25,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(
@@ -43,6 +48,26 @@ public class AuthController {
                 "token_type", "Bearer"
         ));
     }
+
+    @GetMapping("/token")
+    public ResponseEntity<?> getAccessToken(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+
+        RefreshToken token = refreshTokenService.findByToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("유효하지 않은 리프레시 토큰입니다."));
+
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            throw new RuntimeException("리프레시 토큰이 만료되었습니다.");
+        }
+
+        String accessToken = authService.generateAccessToken(token.getUserEmail());
+
+        return ResponseEntity.ok(Map.of(
+                "access_token", accessToken,
+                "token_type", "Bearer"
+        ));
+    }
+
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
