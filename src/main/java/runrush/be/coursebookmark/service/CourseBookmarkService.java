@@ -54,7 +54,7 @@ public class CourseBookmarkService {
 
     @Transactional(readOnly = true)
     public List<BookmarkedCourseListResponse> getBookmarkedCourses(Long userId) {
-        return courseBookmarkRepository.findByUserId(userId).stream()
+        return courseBookmarkRepository.findWithCourseByUserId(userId).stream()
                 .map(course -> BookmarkedCourseListResponse.toBookmarkedCourseListResponse(course.getRecommendedCourse(), course.getId()))
                 .toList();
     }
