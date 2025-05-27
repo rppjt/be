@@ -74,23 +74,23 @@ public class RecommendedCourseService {
     }
 
     @Transactional(readOnly = true)
-    public RecommendedCourseResponse getRecommendedCourse(Long courseId) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
+    public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
         return RecommendedCourseResponse.toCourseResponse(recommendedCourse);
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseListResponse> getUserRecommendedCourses(Long userId) {
-        return recommendedCourseRepository.findByUserId(userId).stream()
+    public List<RecommendedCourseListResponse> getMyRecommendedCourses(Long userId) {
+        return recommendedCourseRepository.findWithUserByUserId(userId).stream()
                 .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<RecommendedCourseListResponse> getRecommendedCourses() {
-        return recommendedCourseRepository.findAll().stream()
+        return recommendedCourseRepository.findAllWithUser().stream()
                 .map(RecommendedCourseListResponse::toCourseListResponse)
                 .toList();
     }
