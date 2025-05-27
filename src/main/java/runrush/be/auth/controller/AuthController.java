@@ -33,7 +33,7 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/refresh")
     public ResponseEntity<?> reissue(HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookie(request);
         String accessToken = authService.reissueAccessToken(refreshToken);
