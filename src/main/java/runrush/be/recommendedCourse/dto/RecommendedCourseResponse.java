@@ -1,13 +1,17 @@
 package runrush.be.recommendedCourse.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import runrush.be.common.util.GeoJsonUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 public record RecommendedCourseResponse(
-        Long courseId,
+        Long id,
         String userName,
         String title,
         String description,
-        String pathGeoJson,
+        String startLocationName,
+        String endLocationName,
+        JsonNode pathGeoJson,
         double totalDistance,
         double latitude,
         double longitude
@@ -18,7 +22,9 @@ public record RecommendedCourseResponse(
                 course.getUser().getName(),
                 course.getTitle(),
                 course.getDescription(),
-                course.getPathGeoJson(),
+                course.getStartLocationName(),
+                course.getEndLocationName(),
+                GeoJsonUtil.parseGeoJson(course.getPathGeoJson()),
                 course.getTotalDistance(),
                 course.getLatitude(),
                 course.getLongitude()

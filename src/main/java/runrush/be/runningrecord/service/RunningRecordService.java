@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.kakao.client.KakaoMapApiClient;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
@@ -25,6 +26,7 @@ import java.util.List;
 public class RunningRecordService {
     private final RunningRecordRepository runningRecordRepository;
     private final UserService userService;
+    private final KakaoMapApiClient kakaoMapApiClient;
 
     @Transactional
     public void saveRunningRecord(RunningRecordRequest request, Long userId) {
@@ -44,6 +46,9 @@ public class RunningRecordService {
         BigDecimal paceDecimal = minutes.divide(kilometers, 2, RoundingMode.HALF_UP);
         double pace = paceDecimal.doubleValue();
 
+        String startLocationName = kakaoMapApiClient.reverseGeocode(request.startLatitude(), request.endLongitude());
+        String endLocationName = kakaoMapApiClient.reverseGeocode(request.endLatitude(), request.endLongitude());
+
         RunningRecord runningRecord = RunningRecord.builder()
                 .user(user)
                 .pathGeoJson(request.pathGeoJson())
@@ -52,6 +57,8 @@ public class RunningRecordService {
                 .startLongitude(request.startLongitude())
                 .endLatitude(request.endLatitude())
                 .endLongitude(request.endLongitude())
+                .startLocationName(startLocationName)
+                .endLocationName(endLocationName)
                 .startedTime(request.startedTime())
                 .endedTime(request.endedTime())
                 .totalTime(totalTime)

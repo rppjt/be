@@ -8,6 +8,7 @@ public record RunningRecordListResponse(
         Long id,
         double totalDistance,
         long totalTime,
+        String endLocationName,
         LocalDateTime startedTime
 ) {
     public static RunningRecordListResponse toRecordListResponse(RunningRecord record) {
@@ -15,6 +16,7 @@ public record RunningRecordListResponse(
                 record.getId(),
                 record.getTotalDistance(),
                 record.getTotalTime(),
+                record.getEndLocationName(),
                 record.getStartedTime()
         );
     }
