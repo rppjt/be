@@ -31,9 +31,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
 
-        if(token != null) {
+        if (token != null) {
             try {
-                if(jwtTokenProvider.validateToken(token)) {
+                if (jwtTokenProvider.validateToken(token)) {
                     String email = jwtTokenProvider.getEmailFromToken(token);
 
                     User user = userRepository.findByEmail(email)
@@ -51,7 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.error("JWT 인증 처리 중 오류 발생: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
 
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"message\": \"토큰이 유효하지 않거나 만료되었습니다.\"}");
                 return;
             }
         }
