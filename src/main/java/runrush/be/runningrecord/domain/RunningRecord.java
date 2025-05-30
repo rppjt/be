@@ -25,6 +25,15 @@ public class RunningRecord {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "start_location_name")
+    private String startLocationName;
+
+    @Column(name = "end_location_name")
+    private String endLocationName;
+
     @Lob
     @Column(name = "path_geo_json", columnDefinition = "TEXT")
     private String pathGeoJson;
@@ -65,6 +74,9 @@ public class RunningRecord {
     @Builder
     public RunningRecord(
             User user,
+            String imageUrl,
+            String startLocationName,
+            String endLocationName,
             String pathGeoJson,
             double totalDistance,
             double startLatitude,
@@ -77,6 +89,9 @@ public class RunningRecord {
             double pace
     ) {
         this.user = user;
+        this.imageUrl = imageUrl;
+        this.startLocationName = startLocationName;
+        this.endLocationName = endLocationName;
         this.pathGeoJson = pathGeoJson;
         this.totalDistance = totalDistance;
         this.startLatitude = startLatitude;

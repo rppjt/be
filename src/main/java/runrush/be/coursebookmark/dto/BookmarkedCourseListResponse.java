@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 public record BookmarkedCourseListResponse(
         Long bookmarkId,
         Long courseId,
-        String courseTitle,
+        String imageUrl,
+        String title,
         double totalDistance,
         double endLatitude,
         double endLongitude,
@@ -17,6 +18,7 @@ public record BookmarkedCourseListResponse(
         return new BookmarkedCourseListResponse(
                 bookmarkId,
                 course.getId(),
+                course.getImageUrl(),
                 course.getTitle(),
                 course.getTotalDistance(),
                 course.getLatitude(),

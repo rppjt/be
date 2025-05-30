@@ -1,5 +1,7 @@
 package runrush.be.runningrecord.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import runrush.be.common.util.GeoJsonUtil;
 import runrush.be.runningrecord.domain.RunningRecord;
 
 import java.time.LocalDateTime;
@@ -15,7 +17,9 @@ public record RunningRecordResponse(
         double startLongitude,
         double endLatitude,
         double endLongitude,
-        String pathGeoJson
+        String startLocationName,
+        String endLocationName,
+        JsonNode pathGeoJson
 ) {
     public static RunningRecordResponse toRecordResponse(RunningRecord record) {
         return new RunningRecordResponse(
@@ -29,7 +33,9 @@ public record RunningRecordResponse(
                 record.getStartLongitude(),
                 record.getEndLatitude(),
                 record.getEndLongitude(),
-                record.getPathGeoJson()
+                record.getStartLocationName(),
+                record.getEndLocationName(),
+                GeoJsonUtil.parseGeoJson(record.getPathGeoJson())
         );
     }
 }

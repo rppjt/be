@@ -27,6 +27,15 @@ public class RecommendedCourse {
     @Column(name = "source_record_id", unique = true)
     private Long sourceRecordId;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "start_location_name")
+    private String startLocationName;
+
+    @Column(name = "end_location_name")
+    private String endLocationName;
+
     private String title;
 
     private String description;
@@ -49,6 +58,9 @@ public class RecommendedCourse {
     @Builder
     public RecommendedCourse(User user,
                              Long sourceRecordId,
+                             String imageUrl,
+                             String startLocationName,
+                             String endLocationName,
                              String title,
                              String description,
                              String pathGeoJson,
@@ -57,6 +69,9 @@ public class RecommendedCourse {
                              double longitude) {
         this.user = user;
         this.sourceRecordId = sourceRecordId;
+        this.imageUrl = imageUrl;
+        this.startLocationName = startLocationName;
+        this.endLocationName = endLocationName;
         this.title = title;
         this.description = description;
         this.pathGeoJson = pathGeoJson;

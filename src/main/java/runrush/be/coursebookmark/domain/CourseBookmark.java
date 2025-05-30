@@ -24,7 +24,7 @@ public class CourseBookmark {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recommededCourse_id")
+    @JoinColumn(name = "recommended_course_id")
     private RecommendedCourse recommendedCourse;
 
     @CreatedDate
