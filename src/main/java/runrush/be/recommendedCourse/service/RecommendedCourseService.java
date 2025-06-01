@@ -7,6 +7,7 @@ import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
+import runrush.be.recommendedCourse.enums.SortType;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.service.RunningRecordService;
@@ -92,9 +93,18 @@ public class RecommendedCourseService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseListResponse> getRecommendedCourses() {
-        return recommendedCourseRepository.findAllWithUser().stream()
-                .map(RecommendedCourseListResponse::toCourseListResponse)
-                .toList();
+    public List<RecommendedCourseListResponse> getRecommendedCourses(SortType sortType) {
+        return switch (sortType) {
+            case LIKE -> recommendedCourseRepository.findAllOrderedByLikeCount().stream()
+                    .map(RecommendedCourseListResponse::toCourseListResponse)
+                    .toList();
+            case DISTANCE -> recommendedCourseRepository.findAllOrderedByTotalDistance().stream()
+                    .map(RecommendedCourseListResponse::toCourseListResponse)
+                    .toList();
+            case RECENT -> recommendedCourseRepository.findAllOrderedByCreatedAt().stream()
+                    .map(RecommendedCourseListResponse::toCourseListResponse)
+                    .toList();
+        };
     }
+
 }
