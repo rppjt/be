@@ -24,4 +24,14 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
     List<RunningRecord> findWeeklyRecords(@Param("userId") Long userId,
                                           @Param("startDate") LocalDateTime startDate,
                                           @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT rr FROM RunningRecord rr " +
+            "WHERE rr.user.id = :userId " +
+            "AND rr.isDeleted = false " +
+            "AND YEAR(rr.startedTime) = :year " +
+            "AND MONTH(rr.startedTime) = :month " +
+            "ORDER BY rr.startedTime DESC")
+    List<RunningRecord> findMonthlyRecords(@Param("userId") Long userId,
+                                           @Param("year") int year,
+                                           @Param("month") int month);
 }
