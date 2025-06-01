@@ -9,6 +9,7 @@ import runrush.be.auth.model.UserPrincipal;
 import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
+import runrush.be.recommendedCourse.enums.SortType;
 import runrush.be.recommendedCourse.service.RecommendedCourseService;
 
 import java.util.List;
@@ -54,8 +55,9 @@ public class RecommendedCourseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RecommendedCourseListResponse>> getAllRecommendedCourses() {
-        List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses();
+    public ResponseEntity<List<RecommendedCourseListResponse>> getAllRecommendedCourses(
+            @RequestParam(defaultValue = "LIKE") SortType sortType) {
+        List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses(sortType);
         return ResponseEntity.ok().body(recommendedCourses);
     }
 }
