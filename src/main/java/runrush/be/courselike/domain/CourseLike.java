@@ -1,4 +1,4 @@
-package runrush.be.like.domain;
+package runrush.be.courselike.domain;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -10,10 +10,10 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = {
+@Table(name = "course_like", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "recommended_course_id"})
 })
-public class Like {
+public class CourseLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +27,7 @@ public class Like {
     private RecommendedCourse recommendedCourse;
 
     @Builder
-    public Like(User user, RecommendedCourse recommendedCourse) {
+    public CourseLike(User user, RecommendedCourse recommendedCourse) {
         this.user = user;
         this.recommendedCourse = recommendedCourse;
     }

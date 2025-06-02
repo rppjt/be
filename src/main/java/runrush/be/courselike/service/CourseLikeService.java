@@ -1,11 +1,11 @@
-package runrush.be.like.service;
+package runrush.be.courselike.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import runrush.be.like.domain.Like;
-import runrush.be.like.repository.LikeRepository;
+import runrush.be.courselike.domain.CourseLike;
+import runrush.be.courselike.repository.CourseLikeRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.user.domain.User;
@@ -16,8 +16,8 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LikeService {
-    private final LikeRepository likeRepository;
+public class CourseLikeService {
+    private final CourseLikeRepository courseLikeRepository;
     private final UserService userService;
     private final RecommendedCourseRepository recommendedCourseRepository;
 
@@ -28,17 +28,17 @@ public class LikeService {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        Optional<Like> existsLike = likeRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
+        Optional<CourseLike> existsLike = courseLikeRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
         if (existsLike.isPresent()) {
-            likeRepository.delete(existsLike.get());
+            courseLikeRepository.delete(existsLike.get());
             log.info("좋아요 해제: courseId={}", courseId);
 
         } else {
-            Like like = Like.builder()
+            CourseLike courseLike = CourseLike.builder()
                     .user(user)
                     .recommendedCourse(recommendedCourse)
                     .build();
-            likeRepository.save(like);
+            courseLikeRepository.save(courseLike);
             log.info("북마크 추가: courseId={}", courseId);
         }
     }
