@@ -27,21 +27,18 @@ public interface RecommendedCourseRepository extends JpaRepository<RecommendedCo
             "WHERE rc.id = :courseId")
     Optional<RecommendedCourse> findByCourseId(@Param("courseId") Long courseId);
 
-    //좋아요순 정렬
     @Query("SELECT rc FROM RecommendedCourse rc " +
-            "LEFT JOIN Like l ON l.recommendedCourse.id = rc.id " +
+            "LEFT JOIN CourseLike l ON l.recommendedCourse.id = rc.id " +
             "JOIN FETCH rc.user " +
             "GROUP BY rc.id " +
             "ORDER BY COUNT(l.id) DESC")
     List<RecommendedCourse> findAllOrderedByLikeCount();
 
-    // 거리순 정렬
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
             "ORDER BY rc.totalDistance DESC")
     List<RecommendedCourse> findAllOrderedByTotalDistance();
 
-    // 최신순 정렬
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
             "ORDER BY rc.createdAt DESC")

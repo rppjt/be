@@ -1,4 +1,4 @@
-package runrush.be.like.controller;
+package runrush.be.courselike.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import runrush.be.auth.model.UserPrincipal;
-import runrush.be.like.service.LikeService;
+import runrush.be.courselike.service.CourseLikeService;
 
 @RestController
 @RequestMapping("/like")
 @RequiredArgsConstructor
-public class LikeController {
-    private final LikeService likeService;
+public class CourseLikeController {
+    private final CourseLikeService courseLikeService;
 
     @PostMapping("/{courseId}")
     public ResponseEntity<Void> toggleLike(@PathVariable Long courseId,
                                            @AuthenticationPrincipal UserPrincipal user) {
-        likeService.likeToggle(user.getId(), courseId);
+        courseLikeService.likeToggle(user.getId(), courseId);
         return ResponseEntity.noContent().build();
     }
 }
