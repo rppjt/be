@@ -6,10 +6,24 @@ public record PersonalBestStats(
         long longestTime,
         double totalDistance,
         int totalRuns,
-        int currentStreak,
-        int longestStreak
+        BestMonthRecord bestMonthRecord
+
 ) {
+    public record BestMonthRecord(
+            int month,
+            int activeDays
+    ) {
+    }
+
+
     public static PersonalBestStats empty() {
-        return new PersonalBestStats(0.0, 0.0, 0L, 0.0, 0, 0, 0);
+        return new PersonalBestStats(
+                0.0,
+                0.0,
+                0L,
+                0.0,
+                0,
+                new BestMonthRecord(0, 0)
+        );
     }
 }
