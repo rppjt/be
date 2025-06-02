@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import runrush.be.auth.model.UserPrincipal;
 import runrush.be.stats.dto.MonthlyStats;
+import runrush.be.stats.dto.PersonalBestStats;
 import runrush.be.stats.dto.WeeklyStats;
 import runrush.be.stats.service.RunningStatsService;
 
@@ -36,5 +37,11 @@ public class RunningStatsController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/personal-best")
+    public ResponseEntity<PersonalBestStats> getPersonalBestStats(@AuthenticationPrincipal UserPrincipal user) {
+        PersonalBestStats stats = runningStatsService.getPersonalBestStats(user.getId());
+        return ResponseEntity.ok(stats);
     }
 }
