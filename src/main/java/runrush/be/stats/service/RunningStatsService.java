@@ -30,8 +30,8 @@ public class RunningStatsService {
     }
 
     @Transactional(readOnly = true)
-    public WeeklyStats getWeeklyStats(Long userId) {
-        LocalDate today = LocalDate.now();
+    public WeeklyStats getWeeklyStats(Long userId, int weekOffset) {
+        LocalDate today = LocalDate.now().plusWeeks(weekOffset);
         LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -47,27 +47,28 @@ public class RunningStatsService {
         return calculateWeeklyStats(weeklyRecords, startOfWeek, endOfWeek);
     }
 
-    @Transactional(readOnly = true)
-    public MonthlyStats getMonthlyStats(Long userId, int month, int year) {
-        List<RunningRecord> monthlyRecords = runningRecordRepository.findMonthlyRecords(userId, year, month);
 
-        if (monthlyRecords.isEmpty()) {
-            return MonthlyStats.empty(month, year);
+    @Transactional(readOnly = true)
+    public MonthlyStats getMonthlyStats(Long userId, Integer year, Integer month, Integer monthOffset) {
+        LocalDate date;
+
+        if (month != null && year != null) {
+            if (month < 1 || month > 12) {
+                throw new IllegalArgumentException("월은 1-12 사이의 값이어야 합니다. 입력값: " + month);
+            }
+            date = LocalDate.of(year, month, 1);
+        } else {
+            int offset = monthOffset != null ? monthOffset : 0;
+            date = LocalDate.now().plusMonths(offset);
         }
 
-        return calculateMonthlyStats(monthlyRecords, month, year);
-    }
+        List<RunningRecord> monthlyRecords = runningRecordRepository.findMonthlyRecords(userId, date.getYear(), date.getMonthValue());
 
-    @Transactional(readOnly = true)
-    public MonthlyStats getCurrentMonthlyStats(Long userId) {
-        LocalDate today = LocalDate.now();
-        return getMonthlyStats(userId, today.getYear(), today.getMonthValue());
-    }
+        if (monthlyRecords.isEmpty()) {
+            return MonthlyStats.empty(date.getMonthValue(), date.getYear());
+        }
 
-    @Transactional(readOnly = true)
-    public MonthlyStats getLastMonthlyStats(Long userId) {
-        LocalDate lastMonth = LocalDate.now().minusMonths(1);
-        return getMonthlyStats(userId, lastMonth.getYear(), lastMonth.getMonthValue());
+        return calculateMonthlyStats(monthlyRecords, date.getYear(), date.getMonthValue());
     }
 
     private BasicStats calculateBasicStats(List<RunningRecord> records) {
@@ -111,7 +112,7 @@ public class RunningStatsService {
         );
     }
 
-    private MonthlyStats calculateMonthlyStats(List<RunningRecord> records, int month, int year) {
+    private MonthlyStats calculateMonthlyStats(List<RunningRecord> records, int year, int month) {
         BasicStats basic = calculateBasicStats(records);
 
         int activeDays = (int) records.stream()
