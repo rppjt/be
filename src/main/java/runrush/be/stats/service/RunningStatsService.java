@@ -6,13 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
 import runrush.be.stats.dto.MonthlyStats;
+import runrush.be.stats.dto.PersonalBestStats;
 import runrush.be.stats.dto.WeeklyStats;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +74,17 @@ public class RunningStatsService {
         }
 
         return calculateMonthlyStats(monthlyRecords, date.getYear(), date.getMonthValue());
+    }
+
+    @Transactional(readOnly = true)
+    public PersonalBestStats getPersonalBestStats(Long userId) {
+        List<RunningRecord> records = runningRecordRepository.findByUserIdAndIsDeletedFalse(userId);
+
+        if (records.isEmpty()) {
+            return PersonalBestStats.empty();
+        }
+
+        return calculatePersonalBestStats(records);
     }
 
     private BasicStats calculateBasicStats(List<RunningRecord> records) {
@@ -142,5 +158,55 @@ public class RunningStatsService {
                 month,
                 year
         );
+    }
+
+    private PersonalBestStats calculatePersonalBestStats(List<RunningRecord> records) {
+        BasicStats basic = calculateBasicStats(records);
+
+        double longestDistance = records.stream()
+                .mapToDouble(RunningRecord::getTotalDistance)
+                .max().orElse(0.0) / 1000.0;
+
+        double fastestPace = records.stream()
+                .mapToDouble(RunningRecord::getPace)
+                .filter(pace -> pace > 0)
+                .min().orElse(0.0);
+
+        long longestTime = records.stream()
+                .mapToLong(RunningRecord::getTotalTime)
+                .max().orElse(0L);
+
+        PersonalBestStats.BestMonthRecord bestMonthRecord = calculateBestMonthRecord(records);
+
+        return new PersonalBestStats(
+                Math.round(longestDistance * 100.0) / 100.0,
+                Math.round(fastestPace * 100.0) / 100.0,
+                longestTime,
+                basic.totalDistance(),
+                basic.totalRuns(),
+                bestMonthRecord
+        );
+    }
+
+    private PersonalBestStats.BestMonthRecord calculateBestMonthRecord(List<RunningRecord> records) {
+        int currentYear = LocalDate.now().getYear();
+
+        Map<Integer, Set<LocalDate>> monthlyDates = records.stream()
+                .filter(record -> record.getStartedTime().getYear() == currentYear)
+                .collect(Collectors.groupingBy(
+                        record -> record.getStartedTime().getMonthValue(),
+                        Collectors.mapping(
+                                record -> record.getStartedTime().toLocalDate(),
+                                Collectors.toSet()
+                        )
+                ));
+
+        return monthlyDates.entrySet().stream()
+                .max(Map.Entry.comparingByValue(Comparator.comparing(Set::size)))
+                .map(entry -> new PersonalBestStats.BestMonthRecord(
+                        entry.getKey(),
+                        entry.getValue().size()
+                ))
+                .orElse(new PersonalBestStats.BestMonthRecord(0, 0));
     }
 }
