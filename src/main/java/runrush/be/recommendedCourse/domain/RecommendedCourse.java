@@ -64,9 +64,7 @@ public class RecommendedCourse {
                              String title,
                              String description,
                              String pathGeoJson,
-                             double totalDistance,
-                             double latitude,
-                             double longitude) {
+                             double totalDistance) {
         this.user = user;
         this.sourceRecordId = sourceRecordId;
         this.imageUrl = imageUrl;
@@ -76,8 +74,6 @@ public class RecommendedCourse {
         this.description = description;
         this.pathGeoJson = pathGeoJson;
         this.totalDistance = totalDistance;
-        this.latitude = latitude;
-        this.longitude = longitude;
     }
 
     public void changeTitle(String title) {

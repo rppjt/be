@@ -12,9 +12,7 @@ public record RecommendedCourseResponse(
         String startLocationName,
         String endLocationName,
         JsonNode pathGeoJson,
-        double totalDistance,
-        double latitude,
-        double longitude
+        double totalDistance
 ) {
     public static RecommendedCourseResponse toCourseResponse(RecommendedCourse course) {
         return new RecommendedCourseResponse(
@@ -25,9 +23,7 @@ public record RecommendedCourseResponse(
                 course.getStartLocationName(),
                 course.getEndLocationName(),
                 GeoJsonUtil.parseGeoJson(course.getPathGeoJson()),
-                course.getTotalDistance(),
-                course.getLatitude(),
-                course.getLongitude()
+                course.getTotalDistance()
         );
     }
 }

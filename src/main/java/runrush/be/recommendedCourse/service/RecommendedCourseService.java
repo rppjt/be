@@ -40,8 +40,6 @@ public class RecommendedCourseService {
                 .description("")
                 .pathGeoJson(runningRecord.getPathGeoJson())
                 .totalDistance(runningRecord.getTotalDistance())
-                .latitude(runningRecord.getEndLatitude())
-                .longitude(runningRecord.getEndLongitude())
                 .build();
 
         recommendedCourseRepository.save(course);
