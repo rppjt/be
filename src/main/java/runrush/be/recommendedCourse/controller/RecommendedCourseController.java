@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
 import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
+import runrush.be.recommendedCourse.dto.RecommendedCourseMyListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.enums.SortType;
@@ -43,21 +44,24 @@ public class RecommendedCourseController {
     }
 
     @GetMapping("/{courseId}")
-    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId) {
-        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourseDetail(courseId);
+    public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId,
+                                                               @AuthenticationPrincipal UserPrincipal user) {
+        RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourseDetail(courseId, user.getId());
         return ResponseEntity.ok().body(recommendedCourse);
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<RecommendedCourseListResponse>> getMyRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
-        List<RecommendedCourseListResponse> myRecommendedCourses = recommendedCourseService.getMyRecommendedCourses(user.getId());
+    public ResponseEntity<List<RecommendedCourseMyListResponse>> getMyRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
+        List<RecommendedCourseMyListResponse> myRecommendedCourses = recommendedCourseService.getMyRecommendedCourses(user.getId());
         return ResponseEntity.ok().body(myRecommendedCourses);
     }
 
     @GetMapping
     public ResponseEntity<List<RecommendedCourseListResponse>> getAllRecommendedCourses(
-            @RequestParam(defaultValue = "LIKE") SortType sortType) {
-        List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses(sortType);
+            @RequestParam(defaultValue = "LIKE") SortType sortType,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses(sortType, user.getId());
         return ResponseEntity.ok().body(recommendedCourses);
     }
 }
