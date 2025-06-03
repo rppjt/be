@@ -9,9 +9,7 @@ public record RecommendedCourseListResponse(
         String imageUrl,
         String description,
         String endLocationName,
-        double totalDistance,
-        double latitude,
-        double longitude
+        double totalDistance
 ) {
     public static RecommendedCourseListResponse toCourseListResponse(RecommendedCourse course) {
         return new RecommendedCourseListResponse(
@@ -21,9 +19,7 @@ public record RecommendedCourseListResponse(
                 course.getImageUrl(),
                 course.getDescription(),
                 course.getEndLocationName(),
-                course.getTotalDistance(),
-                course.getLatitude(),
-                course.getLongitude()
+                course.getTotalDistance()
         );
     }
 }
