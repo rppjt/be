@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface CourseLikeRepository extends JpaRepository<CourseLike, Long> {
 
-    @Query("SELECT l FROM CourseLike l WHERE l.user.id = :userId AND l.recommendedCourse.id = :corseId")
+    @Query("SELECT l FROM CourseLike l WHERE l.user.id = :userId AND l.recommendedCourse.id = :courseId")
     Optional<CourseLike> findByUserIdAndRecommendedCourseId(@Param("userId") Long userId,
                                                             @Param("courseId") Long courseId);
 
