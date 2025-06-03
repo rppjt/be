@@ -9,9 +9,10 @@ public record RecommendedCourseListResponse(
         String imageUrl,
         String description,
         String endLocationName,
-        double totalDistance
+        double totalDistance,
+        boolean isBookmarked
 ) {
-    public static RecommendedCourseListResponse toCourseListResponse(RecommendedCourse course) {
+    public static RecommendedCourseListResponse toCourseListResponse(RecommendedCourse course, boolean isBookmarked) {
         return new RecommendedCourseListResponse(
                 course.getId(),
                 course.getUser().getName(),
@@ -19,7 +20,8 @@ public record RecommendedCourseListResponse(
                 course.getImageUrl(),
                 course.getDescription(),
                 course.getEndLocationName(),
-                course.getTotalDistance()
+                course.getTotalDistance(),
+                isBookmarked
         );
     }
 }
