@@ -2,6 +2,7 @@ package runrush.be.coursebookmark.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import runrush.be.coursebookmark.domain.CourseBookmark;
 
@@ -17,4 +18,12 @@ public interface CourseBookmarkRepository extends JpaRepository<CourseBookmark, 
             "WHERE cb.user.id = :userId " +
             "ORDER BY cb.bookmarkedAt DESC")
     List<CourseBookmark> findWithCourseByUserId(Long userId);
+
+    void deleteByRecommendedCourseId(Long recommendedCourseId);
+
+    @Query("SELECT cb.recommendedCourse.id FROM CourseBookmark cb " +
+            "WHERE cb.user.id = :userId")
+    List<Long> findRecommendedCourseIdByUserId(@Param("userId") Long userId);
+
+    boolean existsByUserIdAndRecommendedCourseId(Long userId, Long courseId);
 }

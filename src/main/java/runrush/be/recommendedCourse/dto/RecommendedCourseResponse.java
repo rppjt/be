@@ -12,9 +12,15 @@ public record RecommendedCourseResponse(
         String startLocationName,
         String endLocationName,
         JsonNode pathGeoJson,
-        double totalDistance
+        double totalDistance,
+        long likeCount,
+        boolean isLiked,
+        boolean isBookmarked
 ) {
-    public static RecommendedCourseResponse toCourseResponse(RecommendedCourse course) {
+    public static RecommendedCourseResponse toCourseResponse(RecommendedCourse course,
+                                                             long likeCount,
+                                                             boolean isLiked,
+                                                             boolean isBookmarked) {
         return new RecommendedCourseResponse(
                 course.getId(),
                 course.getUser().getName(),
@@ -23,7 +29,10 @@ public record RecommendedCourseResponse(
                 course.getStartLocationName(),
                 course.getEndLocationName(),
                 GeoJsonUtil.parseGeoJson(course.getPathGeoJson()),
-                course.getTotalDistance()
+                course.getTotalDistance(),
+                likeCount,
+                isLiked,
+                isBookmarked
         );
     }
 }

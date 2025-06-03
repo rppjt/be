@@ -3,8 +3,11 @@ package runrush.be.recommendedCourse.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.coursebookmark.repository.CourseBookmarkRepository;
+import runrush.be.courselike.repository.CourseLikeRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseListResponse;
+import runrush.be.recommendedCourse.dto.RecommendedCourseMyListResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseResponse;
 import runrush.be.recommendedCourse.dto.RecommendedCourseUpdateRequest;
 import runrush.be.recommendedCourse.enums.SortType;
@@ -19,6 +22,8 @@ import java.util.List;
 public class RecommendedCourseService {
     private final RecommendedCourseRepository recommendedCourseRepository;
     private final RunningRecordService runningRecordService;
+    private final CourseBookmarkRepository courseBookmarkRepository;
+    private final CourseLikeRepository courseLikeRepository;
 
     @Transactional
     public void createRecommendedCourse(Long recordId, Long userId, String name) {
@@ -72,37 +77,46 @@ public class RecommendedCourseService {
             throw new IllegalArgumentException("등록한 사용자만 삭제 가능합니다.");
         }
 
+
+        courseBookmarkRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
         recommendedCourseRepository.delete(recommendedCourse);
     }
 
     @Transactional(readOnly = true)
-    public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId) {
+    public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId, Long userId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
-        return RecommendedCourseResponse.toCourseResponse(recommendedCourse);
+        long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
+        boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
+
+        boolean isBookmarked = courseBookmarkRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
+
+        return RecommendedCourseResponse.toCourseResponse(recommendedCourse, likeCount, isLiked, isBookmarked);
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseListResponse> getMyRecommendedCourses(Long userId) {
+    public List<RecommendedCourseMyListResponse> getMyRecommendedCourses(Long userId) {
         return recommendedCourseRepository.findWithUserByUserId(userId).stream()
-                .map(RecommendedCourseListResponse::toCourseListResponse)
+                .map(RecommendedCourseMyListResponse::toCourseListResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendedCourseListResponse> getRecommendedCourses(SortType sortType) {
-        return switch (sortType) {
-            case LIKE -> recommendedCourseRepository.findAllOrderedByLikeCount().stream()
-                    .map(RecommendedCourseListResponse::toCourseListResponse)
-                    .toList();
-            case DISTANCE -> recommendedCourseRepository.findAllOrderedByTotalDistance().stream()
-                    .map(RecommendedCourseListResponse::toCourseListResponse)
-                    .toList();
-            case RECENT -> recommendedCourseRepository.findAllOrderedByCreatedAt().stream()
-                    .map(RecommendedCourseListResponse::toCourseListResponse)
-                    .toList();
+    public List<RecommendedCourseListResponse> getRecommendedCourses(SortType sortType, Long userId) {
+        List<RecommendedCourse> courses = switch (sortType) {
+            case LIKE -> recommendedCourseRepository.findAllOrderedByLikeCount(userId);
+            case DISTANCE -> recommendedCourseRepository.findAllOrderedByTotalDistance(userId);
+            case RECENT -> recommendedCourseRepository.findAllOrderedByCreatedAt(userId);
         };
-    }
 
+        List<Long> bookmarkedCourseIds = courseBookmarkRepository.findRecommendedCourseIdByUserId(userId);
+
+        return courses.stream()
+                .map(course -> {
+                    boolean isBookmarked = bookmarkedCourseIds.contains(course.getId());
+                    return RecommendedCourseListResponse.toCourseListResponse(course, isBookmarked);
+                })
+                .toList();
+    }
 }
