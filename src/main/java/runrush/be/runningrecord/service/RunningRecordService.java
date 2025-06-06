@@ -6,12 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import runrush.be.kakao.client.KakaoMapApiClient;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
 import runrush.be.runningrecord.dto.RunningRecordResponse;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
+import runrush.be.s3.service.ImageUploadService;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
@@ -27,10 +29,13 @@ public class RunningRecordService {
     private final RunningRecordRepository runningRecordRepository;
     private final UserService userService;
     private final KakaoMapApiClient kakaoMapApiClient;
+    private final ImageUploadService imageUploadService;
 
     @Transactional
-    public void saveRunningRecord(RunningRecordRequest request, Long userId) {
+    public void saveRunningRecord(RunningRecordRequest request, Long userId, MultipartFile image) {
         User user = userService.findUserById(userId);
+
+        String imageUrl = imageUploadService.uploadImage(image, "running-record");
 
         double totalDistance = calculateTotalDistance(request.pathGeoJson());
         long totalTime = Duration.between(request.startedTime(), request.endedTime()).getSeconds();
@@ -51,6 +56,7 @@ public class RunningRecordService {
 
         RunningRecord runningRecord = RunningRecord.builder()
                 .user(user)
+                .imageUrl(imageUrl)
                 .pathGeoJson(request.pathGeoJson())
                 .totalDistance(totalDistance)
                 .startLatitude(request.startLatitude())
