@@ -1,10 +1,12 @@
 package runrush.be.runningrecord.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import runrush.be.auth.model.UserPrincipal;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
@@ -21,8 +23,9 @@ public class RunningRecordController {
 
     @PostMapping
     public ResponseEntity<Void> createRunningRecord(@AuthenticationPrincipal UserPrincipal user,
-                                                    @RequestBody RunningRecordRequest request) {
-        runningRecordService.saveRunningRecord(request, user.getId());
+                                                    @RequestPart("image") MultipartFile image,
+                                                    @RequestPart("data") RunningRecordRequest request) {
+        runningRecordService.saveRunningRecord(request, user.getId(), image);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
