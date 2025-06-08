@@ -2,11 +2,14 @@ package runrush.be.friends.domain;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import runrush.be.user.domain.User;
 
+@Getter
 @Entity
 @NoArgsConstructor
+@Table(name = "friends")
 public class Friends {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
