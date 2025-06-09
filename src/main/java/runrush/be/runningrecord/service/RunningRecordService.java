@@ -129,6 +129,23 @@ public class RunningRecordService {
         log.info("러닝 기록 복구 완료: recordId={}", recordId);
     }
 
+    @Transactional
+    public void permanentlyDeleteRecord(Long recordId, Long userId) {
+        RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("영구 삭제할 수 있는 기록이 없습니다."));
+
+        if (record.getImageUrl() != null) {
+            try {
+                imageUploadService.deleteImage(record.getImageUrl());
+            } catch (Exception e) {
+                log.warn("이미지 삭제 중 오류 발생: {}", e.getMessage());
+            }
+        }
+
+        runningRecordRepository.delete(record);
+        log.info("러닝 기록 영구 삭제 완료: recordId={}", recordId);
+    }
+
     private double calculateTotalDistance(String pathGeoJson) {
         try {
             ObjectMapper mapper = new ObjectMapper();
