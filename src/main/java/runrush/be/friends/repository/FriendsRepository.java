@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface FriendsRepository extends JpaRepository<Friends, Long> {
     // 특정 사용자 간의 관계 조회 (한 방향)
-    Optional<Friends> findByRequesterIdAndTargetId(Long requestId, Long targetId);
+    Optional<Friends> findByRequesterIdAndTargetId(Long requesterId, Long targetId);
 
     // 내가 보낸 친구 요청들
     @Query("SELECT f FROM Friends f " +
@@ -33,12 +33,16 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     List<Friends> findMyFriends(@Param("userId") Long userId);
 
     // 친구 요청 거절
-    void deleteFriendsRequest(Long userId, Long friendId);
+    @Modifying
+    @Query("DELETE FROM Friends f WHERE " +
+            "f.requester.id = :userId AND f.target.id = :friendId " +
+            "AND f.status = 'PENDING'")
+    void deleteFriendsRequest(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
     @Modifying
     @Query("DELETE FROM Friends f WHERE " +
             "(f.requester.id = :userId1 AND f.target.id = :userId2) OR " +
             "(f.requester.id = :userId2 AND f.target.id = :userId1)")
     void deleteAllFriends(@Param("userId1") Long userId1,
-                       @Param("userId2") Long userId2);
+                          @Param("userId2") Long userId2);
 }
