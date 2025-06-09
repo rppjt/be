@@ -77,7 +77,7 @@ public class RecommendedCourseService {
             throw new IllegalArgumentException("등록한 사용자만 삭제 가능합니다.");
         }
 
-
+        courseLikeRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
         courseBookmarkRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
         recommendedCourseRepository.delete(recommendedCourse);
     }

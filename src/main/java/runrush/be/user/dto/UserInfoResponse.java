@@ -8,6 +8,7 @@ public record UserInfoResponse(
         String email,
         String name,
         String profileImage,
+        String nickname,
         Level level,
         int experiencePoints
 ) {
@@ -17,6 +18,7 @@ public record UserInfoResponse(
                 user.getEmail(),
                 user.getName(),
                 user.getProfileImage(),
+                user.getNickname(),
                 user.getLevel(),
                 user.getExperiencePoints()
         );

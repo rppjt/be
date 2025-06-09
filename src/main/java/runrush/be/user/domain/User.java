@@ -25,17 +25,21 @@ public class User {
     @Column(name = "profile_image")
     private String profileImage;
 
+    @Column(unique = true)
+    private String nickname;
+
     @Enumerated(EnumType.STRING)
     private Level level;
 
     private int experiencePoints;
 
     @Builder
-    public User(String kakaoId, String email, String name, String profileImage) {
+    public User(String kakaoId, String email, String name, String profileImage, String nickname) {
         this.kakaoId = kakaoId;
         this.email = email;
         this.name = name;
         this.profileImage = profileImage;
+        this.nickname = nickname;
         this.level = Level.BEGINNER;
         this.experiencePoints = 0;
     }
@@ -43,5 +47,13 @@ public class User {
     public void addExperiencePoints(int points) {
         this.experiencePoints += points;
         this.level = Level.fromExperiencePoints(experiencePoints);
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }
