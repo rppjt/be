@@ -84,6 +84,20 @@ public class FriendsService {
         log.info("친구 요청 거절: {} -> {}", requesterId, targetId);
     }
 
+    @Transactional
+    public void removeFriend(Long userId, Long friendId) {
+        boolean isFriend = friendsRepository.findByRequesterIdAndTargetId(userId, friendId)
+                .map(relation -> relation.getStatus() == FriendStatus.ACCEPTED)
+                .orElse(false);
+
+        if (!isFriend) {
+            throw new IllegalArgumentException("친구 관계가 아닙니다.");
+        }
+
+        friendsRepository.deleteAllFriends(userId, friendId);
+        log.info("친구 관계 해제: {} <-> {}", userId, friendId);
+    }
+
     private boolean hasRelation(Long userId, Long friendId) {
         return friendsRepository.findByRequesterIdAndTargetId(userId, friendId).isPresent() ||
                 friendsRepository.findByRequesterIdAndTargetId(friendId, userId).isPresent();
