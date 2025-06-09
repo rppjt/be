@@ -1,7 +1,6 @@
 package runrush.be.runningrecord.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,6 +45,28 @@ public class RunningRecordController {
     public ResponseEntity<Void> deleteRunningRecord(@PathVariable Long recordId,
                                                     @AuthenticationPrincipal UserPrincipal user) {
         runningRecordService.deleteRunningRecord(recordId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/deleted")
+    public ResponseEntity<List<RunningRecordListResponse>> getDeletedRecords(@AuthenticationPrincipal UserPrincipal user) {
+        List<RunningRecordListResponse> deletedRecord = runningRecordService.getDeletedRecord(user.getId());
+        return ResponseEntity.ok(deletedRecord);
+    }
+
+    @PutMapping("/restore/{recordId}")
+    public ResponseEntity<Void> restoreRunningRecord(
+            @PathVariable Long recordId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.restoreRunningRecord(recordId, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/permanent/{recordId}")
+    public ResponseEntity<Void> permanentDeleteRunningRecord(
+            @PathVariable Long recordId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.permanentlyDeleteRecord(recordId, user.getId());
         return ResponseEntity.noContent().build();
     }
 }
