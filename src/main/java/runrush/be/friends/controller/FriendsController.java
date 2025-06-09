@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
-import runrush.be.friends.dto.FriendInfoResponse;
+import runrush.be.friends.dto.FriendResponse;
+import runrush.be.friends.dto.ReceivedFriendRequestResponse;
+import runrush.be.friends.dto.SentFriendRequestResponse;
 import runrush.be.friends.service.FriendsService;
 
 import java.util.List;
@@ -50,23 +52,23 @@ public class FriendsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FriendInfoResponse>> getMyFriends(
+    public ResponseEntity<List<FriendResponse>> getMyFriends(
             @AuthenticationPrincipal UserPrincipal user) {
-        List<FriendInfoResponse> myFriends = friendsService.getMyFriends(user.getId());
+        List<FriendResponse> myFriends = friendsService.getMyFriends(user.getId());
         return ResponseEntity.ok().body(myFriends);
     }
 
     @GetMapping("/request/sent")
-    public ResponseEntity<List<FriendInfoResponse>> getSentMyRequests(
+    public ResponseEntity<List<SentFriendRequestResponse>> getSentMyRequests(
             @AuthenticationPrincipal UserPrincipal user) {
-        List<FriendInfoResponse> sentFriendRequest = friendsService.getSentFriendRequest(user.getId());
+        List<SentFriendRequestResponse> sentFriendRequest = friendsService.getSentFriendRequest(user.getId());
         return ResponseEntity.ok().body(sentFriendRequest);
     }
 
     @GetMapping("/request/received")
-    public ResponseEntity<List<FriendInfoResponse>> getReceivedMyRequests(
+    public ResponseEntity<List<ReceivedFriendRequestResponse>> getReceivedMyRequests(
             @AuthenticationPrincipal UserPrincipal user) {
-        List<FriendInfoResponse> receivedFriendRequest = friendsService.getReceivedFriendRequest(user.getId());
+        List<ReceivedFriendRequestResponse> receivedFriendRequest = friendsService.getReceivedFriendRequest(user.getId());
         return ResponseEntity.ok().body(receivedFriendRequest);
     }
 }

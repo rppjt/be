@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.friends.domain.FriendStatus;
 import runrush.be.friends.domain.Friends;
-import runrush.be.friends.dto.FriendInfoResponse;
+import runrush.be.friends.dto.FriendResponse;
+import runrush.be.friends.dto.ReceivedFriendRequestResponse;
+import runrush.be.friends.dto.SentFriendRequestResponse;
 import runrush.be.friends.repository.FriendsRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
@@ -102,11 +104,11 @@ public class FriendsService {
     }
 
     @Transactional(readOnly = true)
-    public List<FriendInfoResponse> getMyFriends(Long userId) {
+    public List<FriendResponse> getMyFriends(Long userId) {
         List<Friends> myFriends = friendsRepository.findMyFriends(userId);
 
         return myFriends.stream()
-                .map(friends -> new FriendInfoResponse(
+                .map(friends -> new FriendResponse(
                         friends.getTarget().getId(),
                         friends.getTarget().getName(),
                         friends.getTarget().getProfileImage()
@@ -115,11 +117,11 @@ public class FriendsService {
     }
 
     @Transactional(readOnly = true)
-    public List<FriendInfoResponse> getSentFriendRequest(Long userId) {
+    public List<SentFriendRequestResponse> getSentFriendRequest(Long userId) {
         List<Friends> friendsRequest = friendsRepository.findFriendsRequest(userId);
 
         return friendsRequest.stream()
-                .map(request -> new FriendInfoResponse(
+                .map(request -> new SentFriendRequestResponse(
                         request.getTarget().getId(),
                         request.getTarget().getName(),
                         request.getTarget().getProfileImage()
@@ -128,11 +130,11 @@ public class FriendsService {
     }
 
     @Transactional(readOnly = true)
-    public List<FriendInfoResponse> getReceivedFriendRequest(Long userId) {
+    public List<ReceivedFriendRequestResponse> getReceivedFriendRequest(Long userId) {
         List<Friends> friendsTarget = friendsRepository.findFriendsTarget(userId);
 
         return friendsTarget.stream()
-                .map(request -> new FriendInfoResponse(
+                .map(request -> new ReceivedFriendRequestResponse(
                         request.getRequester().getId(),
                         request.getRequester().getName(),
                         request.getRequester().getProfileImage()

@@ -1,7 +1,7 @@
 package runrush.be.friends.dto;
 
-public record FriendInfoResponse(
-        Long id,
+public record SentFriendRequestResponse(
+        Long targetId,
         String name,
         String profileImage
 ) {
