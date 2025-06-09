@@ -1,6 +1,7 @@
 package runrush.be.courselike.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,4 +19,8 @@ public interface CourseLikeRepository extends JpaRepository<CourseLike, Long> {
     long countByRecommendedCourseId(Long courseId);
 
     boolean existsByUserIdAndRecommendedCourseId(Long userId, Long courseId);
+
+    @Modifying
+    @Query("DELETE FROM CourseLike l WHERE l.recommendedCourse.id = :courseId")
+    void deleteByRecommendedCourseId(@Param("courseId") Long courseId);
 }
