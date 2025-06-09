@@ -71,6 +71,9 @@ public class RunningRecord {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
     public RunningRecord(
             User user,
@@ -106,6 +109,12 @@ public class RunningRecord {
 
     public void recordDeleted() {
         this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.isDeleted = false;
+        this.deletedAt = null;
     }
 
     public boolean isRecordDeleted() {
