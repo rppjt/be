@@ -12,7 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
-    Optional<RunningRecord> findByIdAndIsDeletedFalse(Long id);
+    @Query("SELECT rr FROM RunningRecord rr " +
+            "JOIN FETCH rr.user " +
+            "WHERE rr.id = :id AND rr.isDeleted = false")
+    Optional<RunningRecord> findByIdAndIsDeletedFalse(@Param("id") Long id);
 
     List<RunningRecord> findByUserIdAndIsDeletedFalse(Long userId);
 
@@ -34,4 +37,7 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
     List<RunningRecord> findMonthlyRecords(@Param("userId") Long userId,
                                            @Param("year") int year,
                                            @Param("month") int month);
+
+    Optional<RunningRecord> findByIdAndUserIdAndIsDeletedTrue(Long id, Long userId);
+    List<RunningRecord> findByUserIdAndIsDeletedTrue(Long userId);
 }
