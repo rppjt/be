@@ -10,9 +10,7 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "course_like", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "recommended_course_id"})
-})
+@Table(name = "course_like")
 public class CourseLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
