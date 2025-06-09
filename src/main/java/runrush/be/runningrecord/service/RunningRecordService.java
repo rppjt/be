@@ -88,6 +88,13 @@ public class RunningRecordService {
     }
 
     @Transactional(readOnly = true)
+    public List<RunningRecordListResponse> getDeletedRecord(Long userId) {
+        return runningRecordRepository.findByUserIdAndIsDeletedTrue(userId).stream()
+                .map(RunningRecordListResponse::toRecordListResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<RunningRecordListResponse> getRunningRecords(Long userId) {
         return runningRecordRepository.findByUserIdAndIsDeletedFalse(userId).stream()
                 .map(RunningRecordListResponse::toRecordListResponse)
@@ -112,7 +119,6 @@ public class RunningRecordService {
         runningRecord.recordDeleted();
         log.info("러닝 기록 삭제 완료: recordId={}", recordId);
     }
-
 
     private double calculateTotalDistance(String pathGeoJson) {
         try {
