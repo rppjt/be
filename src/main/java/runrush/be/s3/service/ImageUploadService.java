@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -62,6 +64,31 @@ public class ImageUploadService {
 
     }
 
+    public void deleteImage(String imageUrl) {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            log.warn("삭제할 이미지 URL이 없습니다.");
+            return;
+        }
+
+        try {
+            String key = extractKeyFromUrl(imageUrl);
+            DeleteObjectRequest request = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(request);
+            log.info("S3 이미지 삭제 성공: {}", imageUrl);
+
+        } catch (IllegalArgumentException e) {
+            log.error("잘못된 이미지 URL: {}", imageUrl, e);
+        } catch (S3Exception e) {
+            log.error("S3 이미지 삭제 실패: {}", imageUrl, e);
+        } catch (Exception e) {
+            log.error("예상치 못한 이미지 삭제 오류: {}", imageUrl, e);
+        }
+    }
+
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 존재하지 않습니다.");
@@ -86,5 +113,21 @@ public class ImageUploadService {
     private String buildS3Key(String directory, String fileName) {
         String datePath = LocalDate.now().toString();
         return directory + "/" + datePath + "/" + fileName;
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            String path = url.getPath();
+
+            if (path == null || path.isEmpty()) {
+                throw new IllegalArgumentException("URL 경로가 없습니다.");
+            }
+
+            return path.startsWith("/") ? path.substring(1) : path;
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("잘못된 이미지 URL 형식입니다: " + imageUrl, e);
+        }
     }
 }
