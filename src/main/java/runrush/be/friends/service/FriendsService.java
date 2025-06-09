@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.friends.domain.FriendStatus;
 import runrush.be.friends.domain.Friends;
+import runrush.be.friends.dto.FriendInfoResponse;
 import runrush.be.friends.repository.FriendsRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -80,7 +83,7 @@ public class FriendsService {
             throw new IllegalArgumentException("대기 중인 친구 요청이 아닙니다.");
         }
 
-        friendsRepository.delete(pendingRequest);
+        friendsRepository.deleteFriendsRequest(requesterId, targetId);
         log.info("친구 요청 거절: {} -> {}", requesterId, targetId);
     }
 
@@ -96,6 +99,45 @@ public class FriendsService {
 
         friendsRepository.deleteAllFriends(userId, friendId);
         log.info("친구 관계 해제: {} <-> {}", userId, friendId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FriendInfoResponse> getMyFriends(Long userId) {
+        List<Friends> myFriends = friendsRepository.findMyFriends(userId);
+
+        return myFriends.stream()
+                .map(friends -> new FriendInfoResponse(
+                        friends.getTarget().getId(),
+                        friends.getTarget().getName(),
+                        friends.getTarget().getProfileImage()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FriendInfoResponse> getSentFriendRequest(Long userId) {
+        List<Friends> friendsRequest = friendsRepository.findFriendsRequest(userId);
+
+        return friendsRequest.stream()
+                .map(request -> new FriendInfoResponse(
+                        request.getTarget().getId(),
+                        request.getTarget().getName(),
+                        request.getTarget().getProfileImage()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FriendInfoResponse> getReceivedFriendRequest(Long userId) {
+        List<Friends> friendsTarget = friendsRepository.findFriendsTarget(userId);
+
+        return friendsTarget.stream()
+                .map(request -> new FriendInfoResponse(
+                        request.getRequester().getId(),
+                        request.getRequester().getName(),
+                        request.getRequester().getProfileImage()
+                ))
+                .toList();
     }
 
     private boolean hasRelation(Long userId, Long friendId) {
