@@ -53,4 +53,12 @@ public class RunningRecordController {
         List<RunningRecordListResponse> deletedRecord = runningRecordService.getDeletedRecord(user.getId());
         return ResponseEntity.ok(deletedRecord);
     }
+
+    @PutMapping("/restore/{recordId}")
+    public ResponseEntity<Void> restoreRunningRecord(
+            @PathVariable Long recordId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.restoreRunningRecord(recordId, user.getId());
+        return ResponseEntity.ok().build();
+    }
 }
