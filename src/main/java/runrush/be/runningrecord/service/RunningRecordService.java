@@ -120,6 +120,15 @@ public class RunningRecordService {
         log.info("러닝 기록 삭제 완료: recordId={}", recordId);
     }
 
+    @Transactional
+    public void restoreRunningRecord(Long recordId, Long userId) {
+        RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("복구할 수 있는 기록이 없습니다."));
+
+        record.restore();
+        log.info("러닝 기록 복구 완료: recordId={}", recordId);
+    }
+
     private double calculateTotalDistance(String pathGeoJson) {
         try {
             ObjectMapper mapper = new ObjectMapper();
