@@ -1,7 +1,6 @@
 package runrush.be.runningrecord.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,5 +46,11 @@ public class RunningRecordController {
                                                     @AuthenticationPrincipal UserPrincipal user) {
         runningRecordService.deleteRunningRecord(recordId, user.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/deleted")
+    public ResponseEntity<List<RunningRecordListResponse>> getDeletedRecords(@AuthenticationPrincipal UserPrincipal user) {
+        List<RunningRecordListResponse> deletedRecord = runningRecordService.getDeletedRecord(user.getId());
+        return ResponseEntity.ok(deletedRecord);
     }
 }
