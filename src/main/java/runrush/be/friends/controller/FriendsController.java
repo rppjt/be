@@ -6,7 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
+import runrush.be.friends.dto.FriendInfoResponse;
 import runrush.be.friends.service.FriendsService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,5 +47,26 @@ public class FriendsController {
             @PathVariable Long friendId) {
         friendsService.removeFriend(user.getId(), friendId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FriendInfoResponse>> getMyFriends(
+            @AuthenticationPrincipal UserPrincipal user) {
+        List<FriendInfoResponse> myFriends = friendsService.getMyFriends(user.getId());
+        return ResponseEntity.ok().body(myFriends);
+    }
+
+    @GetMapping("/request/sent")
+    public ResponseEntity<List<FriendInfoResponse>> getSentMyRequests(
+            @AuthenticationPrincipal UserPrincipal user) {
+        List<FriendInfoResponse> sentFriendRequest = friendsService.getSentFriendRequest(user.getId());
+        return ResponseEntity.ok().body(sentFriendRequest);
+    }
+
+    @GetMapping("/request/received")
+    public ResponseEntity<List<FriendInfoResponse>> getReceivedMyRequests(
+            @AuthenticationPrincipal UserPrincipal user) {
+        List<FriendInfoResponse> receivedFriendRequest = friendsService.getReceivedFriendRequest(user.getId());
+        return ResponseEntity.ok().body(receivedFriendRequest);
     }
 }
