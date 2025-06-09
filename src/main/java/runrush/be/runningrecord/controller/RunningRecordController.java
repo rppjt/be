@@ -61,4 +61,12 @@ public class RunningRecordController {
         runningRecordService.restoreRunningRecord(recordId, user.getId());
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/permanent/{recordId}")
+    public ResponseEntity<Void> permanentDeleteRunningRecord(
+            @PathVariable Long recordId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        runningRecordService.permanentlyDeleteRecord(recordId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
 }
