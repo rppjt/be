@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import runrush.be.auth.model.UserPrincipal;
+import runrush.be.location.dto.LocationSharingRequest;
+import runrush.be.location.dto.LocationSharingResponse;
 import runrush.be.location.dto.LocationUpdateRequest;
 import runrush.be.location.service.UserLocationService;
 
@@ -22,5 +24,13 @@ public class UserLocationController {
                                                @RequestBody LocationUpdateRequest request) {
         userLocationService.updateLocation(user.getId(), request);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/sharing")
+    public ResponseEntity<LocationSharingResponse> setLocationSharing(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody LocationSharingRequest request) {
+        LocationSharingResponse response = userLocationService.setLocationSharing(user.getId(), request.isSharing());
+        return ResponseEntity.ok(response);
     }
 }
