@@ -47,13 +47,13 @@ public class RecommendedCourseController {
     public ResponseEntity<RecommendedCourseResponse> getCourse(@PathVariable Long courseId,
                                                                @AuthenticationPrincipal UserPrincipal user) {
         RecommendedCourseResponse recommendedCourse = recommendedCourseService.getRecommendedCourseDetail(courseId, user.getId());
-        return ResponseEntity.ok().body(recommendedCourse);
+        return ResponseEntity.ok(recommendedCourse);
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<RecommendedCourseMyListResponse>> getMyRecommendedCourses(@AuthenticationPrincipal UserPrincipal user) {
         List<RecommendedCourseMyListResponse> myRecommendedCourses = recommendedCourseService.getMyRecommendedCourses(user.getId());
-        return ResponseEntity.ok().body(myRecommendedCourses);
+        return ResponseEntity.ok(myRecommendedCourses);
     }
 
     @GetMapping
@@ -62,6 +62,6 @@ public class RecommendedCourseController {
             @AuthenticationPrincipal UserPrincipal user
     ) {
         List<RecommendedCourseListResponse> recommendedCourses = recommendedCourseService.getRecommendedCourses(sortType, user.getId());
-        return ResponseEntity.ok().body(recommendedCourses);
+        return ResponseEntity.ok(recommendedCourses);
     }
 }

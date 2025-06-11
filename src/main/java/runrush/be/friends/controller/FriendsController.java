@@ -55,20 +55,20 @@ public class FriendsController {
     public ResponseEntity<List<FriendResponse>> getMyFriends(
             @AuthenticationPrincipal UserPrincipal user) {
         List<FriendResponse> myFriends = friendsService.getMyFriends(user.getId());
-        return ResponseEntity.ok().body(myFriends);
+        return ResponseEntity.ok(myFriends);
     }
 
     @GetMapping("/request/sent")
     public ResponseEntity<List<SentFriendRequestResponse>> getSentMyRequests(
             @AuthenticationPrincipal UserPrincipal user) {
         List<SentFriendRequestResponse> sentFriendRequest = friendsService.getSentFriendRequest(user.getId());
-        return ResponseEntity.ok().body(sentFriendRequest);
+        return ResponseEntity.ok(sentFriendRequest);
     }
 
     @GetMapping("/request/received")
     public ResponseEntity<List<ReceivedFriendRequestResponse>> getReceivedMyRequests(
             @AuthenticationPrincipal UserPrincipal user) {
         List<ReceivedFriendRequestResponse> receivedFriendRequest = friendsService.getReceivedFriendRequest(user.getId());
-        return ResponseEntity.ok().body(receivedFriendRequest);
+        return ResponseEntity.ok(receivedFriendRequest);
     }
 }
