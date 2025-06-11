@@ -6,6 +6,7 @@ import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 public record RecommendedCourseResponse(
         Long id,
+        Long userId,
         String userName,
         String title,
         String description,
@@ -23,6 +24,7 @@ public record RecommendedCourseResponse(
                                                              boolean isBookmarked) {
         return new RecommendedCourseResponse(
                 course.getId(),
+                course.getUser().getId(),
                 course.getUser().getName(),
                 course.getTitle(),
                 course.getDescription(),

@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import runrush.be.auth.domain.RefreshToken;
 import runrush.be.auth.jwt.JwtTokenProvider;
 import runrush.be.auth.repository.RefreshTokenRepository;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -52,12 +54,12 @@ public class RefreshTokenService {
     private void verifyExpiration(RefreshToken token) {
         if (token.getExpiresAt().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException("리프레시 토큰이 만료되었습니다. 다시 로그인해주세요");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.");
         }
 
         if(!jwtTokenProvider.validateToken(token.getToken())) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException("리프레시 토큰이 유효하지 않습니다. 다시 로그인해주세요.");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "리프레시 토큰이 유효하지 않습니다. 다시 로그인해주세요.");
         }
     }
 }

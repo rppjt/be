@@ -3,6 +3,8 @@ package runrush.be.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.user.domain.User;
 import runrush.be.user.dto.UserUpdateRequest;
 import runrush.be.user.repository.UserRepository;
@@ -15,13 +17,13 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public User findUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID=" + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -35,7 +37,7 @@ public class UserService {
 
         if (request.nickname() != null && !user.getNickname().equals(request.nickname())) {
             if (userRepository.existsByNickname(request.nickname())) {
-                throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+                throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS, "이미 사용 중인 닉네임입니다.");
             }
             user.updateNickname(request.nickname());
         }

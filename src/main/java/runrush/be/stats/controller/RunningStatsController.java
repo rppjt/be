@@ -31,12 +31,8 @@ public class RunningStatsController {
                                                       @RequestParam(required = false) Integer year,
                                                       @RequestParam(required = false) Integer month,
                                                       @RequestParam(required = false) Integer monthOffset) {
-        try {
-            MonthlyStats stats = runningStatsService.getMonthlyStats(user.getId(), year, month, monthOffset);
-            return ResponseEntity.ok(stats);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        MonthlyStats stats = runningStatsService.getMonthlyStats(user.getId(), year, month, monthOffset);
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/personal-best")

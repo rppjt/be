@@ -3,6 +3,8 @@ package runrush.be.stats.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
 import runrush.be.stats.dto.MonthlyStats;
@@ -59,7 +61,7 @@ public class RunningStatsService {
 
         if (month != null && year != null) {
             if (month < 1 || month > 12) {
-                throw new IllegalArgumentException("월은 1-12 사이의 값이어야 합니다. 입력값: " + month);
+                throw new BusinessException(ErrorCode.INVALID_REQUEST, "월은 1-12 사이의 값이어야 합니다. 입력값: " + month);
             }
             date = LocalDate.of(year, month, 1);
         } else {

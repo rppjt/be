@@ -3,6 +3,8 @@ package runrush.be.recommendedCourse.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.coursebookmark.repository.CourseBookmarkRepository;
 import runrush.be.courselike.repository.CourseLikeRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
@@ -30,7 +32,7 @@ public class RecommendedCourseService {
         RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, userId);
 
         if (recommendedCourseRepository.existsBySourceRecordId(recordId)) {
-            throw new IllegalArgumentException("이미 추천된 기록입니다.");
+            throw new BusinessException(ErrorCode.ALREADY_FRIENDS, "이미 추천된 기록입니다.");
         }
 
         String title = name + "님의 추천 코스 #" + recordId;
@@ -56,7 +58,7 @@ public class RecommendedCourseService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
 
         if (!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new IllegalArgumentException("등록한 사용자만 수정이 가능합니다.");
+            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "등록한 사용자만 수정이 가능합니다.");
         }
 
         if (request.title() != null && !request.title().isBlank()) {
@@ -71,10 +73,10 @@ public class RecommendedCourseService {
     @Transactional
     public void deleteRecommendedCourse(Long courseId, Long userId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
 
         if (!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new IllegalArgumentException("등록한 사용자만 삭제 가능합니다.");
+            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "등록한 사용자만 삭제 가능합니다.");
         }
 
         courseLikeRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
@@ -85,7 +87,7 @@ public class RecommendedCourseService {
     @Transactional(readOnly = true)
     public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId, Long userId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
 
         long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
         boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);

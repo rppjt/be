@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import runrush.be.auth.domain.RefreshToken;
 import runrush.be.auth.service.AuthService;
 import runrush.be.auth.service.RefreshTokenService;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 
 import java.time.Instant;
 import java.util.Map;
@@ -54,10 +56,10 @@ public class AuthController {
         String refreshToken = getRefreshTokenFromCookie(request);
 
         RefreshToken token = refreshTokenService.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("유효하지 않은 리프레시 토큰입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "유효하지 않은 리프레시 토큰입니다."));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
-            throw new RuntimeException("리프레시 토큰이 만료되었습니다.");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "리프레시 토큰이 만료되었습니다.");
         }
 
         String accessToken = authService.generateAccessToken(token.getUserEmail());
@@ -78,6 +80,6 @@ public class AuthController {
                 }
             }
         }
-        throw new RuntimeException("리프레시 토큰이 쿠키에 존재하지 않습니다.");
+        throw new BusinessException(ErrorCode.TOKEN_NOT_PROVIDED, "리프레시 토큰이 쿠키에 존재하지 않습니다.");
     }
 }

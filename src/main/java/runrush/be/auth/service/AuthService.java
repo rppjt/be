@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import runrush.be.auth.jwt.JwtTokenProvider;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 
 import java.time.Instant;
 
@@ -16,13 +18,13 @@ public class AuthService {
 
     public void logout(String accessToken, HttpServletResponse response) {
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("유효한 토큰 형식이 아닙니다.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN, "유효한 토큰 형식이 아닙니다.");
         }
 
         String token = accessToken.substring(7);
 
         if (!jwtTokenProvider.validateToken(token)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
         String email = jwtTokenProvider.getEmailFromToken(token);
