@@ -35,7 +35,7 @@ public class RunningRecord {
     private String endLocationName;
 
     @Lob
-    @Column(name = "path_geo_json", columnDefinition = "TEXT")
+    @Column(name = "path_geo_json", columnDefinition = "LONGTEXT")
     private String pathGeoJson;
 
     @Column(name = "total_distance")

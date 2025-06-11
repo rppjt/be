@@ -41,7 +41,7 @@ public class RecommendedCourse {
     private String description;
 
     @Lob
-    @Column(name = "path_geo_json")
+    @Column(name = "path_geo_json", columnDefinition = "LONGTEXT")
     private String pathGeoJson;
 
     @Column(name = "total_distance")
