@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.friends.domain.FriendStatus;
 import runrush.be.friends.domain.Friends;
 import runrush.be.friends.dto.FriendResponse;
@@ -25,14 +27,14 @@ public class FriendsService {
     @Transactional
     public void sendFriendRequest(Long requesterId, Long targetId) {
         if (requesterId.equals(targetId)) {
-            throw new IllegalArgumentException("자기 자신은 친구 요청을 보낼 수 없습니다.");
+            throw new BusinessException(ErrorCode.CANNOT_ADD_SELF_AS_FRIEND);
         }
 
         User targetUser = userService.findUserById(targetId);
         User requesterUser = userService.findUserById(requesterId);
 
         if (hasRelation(requesterId, targetId)) {
-            throw new IllegalArgumentException("이미 친구이거나 친구 요청이 존재합니다.");
+            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_EXISTS);
         }
 
         Friends friends = Friends.builder()
@@ -47,10 +49,10 @@ public class FriendsService {
     @Transactional
     public void acceptFriendRequest(Long requesterId, Long targetId) {
         Friends pendingRequest = friendsRepository.findByRequesterIdAndTargetId(requesterId, targetId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         if (pendingRequest.getStatus() != FriendStatus.PENDING) {
-            throw new IllegalArgumentException("대기 중인 친구 요청이 아닙니다.");
+            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED, "대기 중인 친구 요청이 아닙니다.");
         }
 
         User target = userService.findUserById(targetId);
@@ -79,10 +81,10 @@ public class FriendsService {
     @Transactional
     public void rejectFriendRequest(Long requesterId, Long targetId) {
         Friends pendingRequest = friendsRepository.findByRequesterIdAndTargetId(requesterId, targetId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         if (pendingRequest.getStatus() != FriendStatus.PENDING) {
-            throw new IllegalArgumentException("대기 중인 친구 요청이 아닙니다.");
+            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED, "대기 중인 친구 요청이 아닙니다.");
         }
 
         friendsRepository.deleteFriendsRequest(requesterId, targetId);
@@ -96,7 +98,7 @@ public class FriendsService {
                 .orElse(false);
 
         if (!isFriend) {
-            throw new IllegalArgumentException("친구 관계가 아닙니다.");
+            throw new BusinessException(ErrorCode.ALREADY_FRIENDS, "친구 관계가 아닙니다.");
         }
 
         friendsRepository.deleteAllFriends(userId, friendId);

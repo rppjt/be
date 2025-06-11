@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.coursebookmark.domain.CourseBookmark;
 import runrush.be.coursebookmark.dto.BookmarkToggleResponse;
 import runrush.be.coursebookmark.dto.BookmarkedCourseListResponse;
@@ -28,10 +30,10 @@ public class CourseBookmarkService {
     public BookmarkToggleResponse toggleBookmark(Long userId, Long courseId) {
         User user = userService.findUserById(userId);
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
 
         if (recommendedCourse.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("본인이 등록한 코스는 즐겨찾기 할 수 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "본인이 등록한 코스는 즐겨찾기 할 수 없습니다.");
         }
 
         Optional<CourseBookmark> existsBookmark = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId);

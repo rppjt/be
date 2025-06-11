@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.kakao.client.KakaoMapApiClient;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
@@ -81,7 +83,7 @@ public class RunningRecordService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 기록입니다."));
 
         if (!runningRecord.getUser().getEmail().equals(email)) {
-            throw new IllegalArgumentException("본인의 기록만 조회할 수 있습니다.");
+            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 조회할 수 있습니다.");
         }
 
         return RunningRecordResponse.toRecordResponse(runningRecord);
@@ -107,7 +109,7 @@ public class RunningRecordService {
                 .orElseThrow(() -> new IllegalArgumentException("기록이 존재하지 않거나 삭제되었습니다."));
 
         if (!runningRecord.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 기록만 추천할 수 있습니다.");
+            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 추천할 수 있습니다.");
         }
 
         return runningRecord;
@@ -123,7 +125,7 @@ public class RunningRecordService {
     @Transactional
     public void restoreRunningRecord(Long recordId, Long userId) {
         RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("복구할 수 있는 기록이 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "복구할 수 있는 기록이 없습니다."));
 
         record.restore();
         log.info("러닝 기록 복구 완료: recordId={}", recordId);
@@ -132,7 +134,7 @@ public class RunningRecordService {
     @Transactional
     public void permanentlyDeleteRecord(Long recordId, Long userId) {
         RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("영구 삭제할 수 있는 기록이 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "영구 삭제할 수 있는 기록이 없습니다."));
 
         if (record.getImageUrl() != null) {
             try {
@@ -175,9 +177,11 @@ public class RunningRecordService {
                 totalDistance += haversine(lat1, lon1, lat2, lon2);
             }
             return totalDistance;
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("GeoJSON 파싱 오류: {}", e.getMessage());
-            throw new RuntimeException("경로 정보를 처리하는 중 오류가 발생했습니다", e);
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "경로 정보를 처리하는 중 오류가 발생했습니다");
         }
     }
 

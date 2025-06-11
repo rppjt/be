@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.courselike.domain.CourseLike;
 import runrush.be.courselike.repository.CourseLikeRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
@@ -26,7 +28,7 @@ public class CourseLikeService {
     public void likeToggle(Long userId, Long courseId) {
         User user = userService.findUserById(userId);
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
 
         Optional<CourseLike> existsLike = courseLikeRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
         if (existsLike.isPresent()) {
