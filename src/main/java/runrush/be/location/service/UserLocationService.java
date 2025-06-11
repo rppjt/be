@@ -9,10 +9,13 @@ import runrush.be.common.exception.ErrorCode;
 import runrush.be.location.domain.UserLocation;
 import runrush.be.location.dto.LocationSharingResponse;
 import runrush.be.location.dto.LocationUpdateRequest;
+import runrush.be.location.dto.NearbyFriendResponse;
 import runrush.be.location.repository.UserLocationRepository;
 import runrush.be.user.domain.User;
 import runrush.be.user.service.UserService;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -68,5 +71,37 @@ public class UserLocationService {
             userLocationRepository.save(newLocation);
             log.info("사용자 {} 첫 위치 등록: ({}, {})", userId, request.latitude(), request.longitude());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<NearbyFriendResponse> getNearbyFriends(Long userId, Double radiusKm) {
+        UserLocation userLocation = userLocationRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LOCATION_NOT_FOUND, "사용자의 위치 정보가 없습니다. 먼저 위치를 업데이트해주세요."));
+
+        LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(10);
+        List<UserLocation> friendLocations = userLocationRepository.findFriendsWithActiveLocation(userId, cutoffTime);
+
+        log.debug("사용자 {} 주변 친구 조회: 활성 친구 {}명, 반경 {}km", userId, friendLocations.size(), radiusKm);
+
+        return friendLocations.stream()
+                .map(location -> {
+                    double distance = userLocation.calculateDistance(
+                            location.getLatitude(),
+                            location.getLongitude()
+                    );
+
+                    return new NearbyFriendResponse(
+                            location.getUser().getId(),
+                            location.getUser().getNickname(),
+                            location.getUser().getProfileImage(),
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            distance
+                    );
+                })
+                .filter(friend -> friend.distance() <= radiusKm)
+                .sorted((a, b) -> Double.compare(a.distance(), b.distance()))
+                .peek(friend -> log.debug("주변 친구: {} ({}m 거리", friend.nickname(), Math.round(friend.distance() * 1000)))
+                .toList();
     }
 }
