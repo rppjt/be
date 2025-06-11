@@ -104,4 +104,18 @@ public class UserLocationService {
                 .peek(friend -> log.debug("주변 친구: {} ({}m 거리", friend.nickname(), Math.round(friend.distance() * 1000)))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public LocationSharingResponse getLocationSharingStatus(Long userId) {
+        Optional<UserLocation> userLocation = userLocationRepository.findById(userId);
+
+        if (userLocation.isPresent()) {
+            Boolean currentStatus = userLocation.get().getIsSharing();
+            log.debug("사용자 {} 위치 공유 상태 조회: {}", userId, currentStatus);
+            return LocationSharingResponse.current(userId, currentStatus);
+        } else {
+            log.debug("사용자 {} 위치 정보 없음, 공유 상태: false", userId);
+            return LocationSharingResponse.current(userId, false);
+        }
+    }
 }
