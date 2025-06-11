@@ -3,6 +3,7 @@ package runrush.be.location.domain;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import runrush.be.common.util.GeoUtils;
 import runrush.be.user.domain.User;
 
 import java.time.LocalDateTime;
@@ -48,5 +49,13 @@ public class UserLocation {
     public void toggleSharing(Boolean isSharing) {
         this.isSharing = isSharing;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public double calculateDistance(Double targetLat, Double targetLng) {
+        return GeoUtils.calculateDistance(this.latitude, this.longitude, targetLat, targetLng);
+    }
+
+    public boolean hasSignificantMovement(Double newLat, Double newLng) {
+        return GeoUtils.hasSignificantMovement(this.latitude, this.longitude, newLat, newLng);
     }
 }
