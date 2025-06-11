@@ -21,12 +21,12 @@ public class CourseBookmarkController {
     public ResponseEntity<BookmarkToggleResponse> toggleBookmark(@PathVariable Long courseId,
                                                                  @AuthenticationPrincipal UserPrincipal user) {
         BookmarkToggleResponse bookmarkToggleResponse = courseBookmarkService.toggleBookmark(user.getId(), courseId);
-        return ResponseEntity.ok().body(bookmarkToggleResponse);
+        return ResponseEntity.ok(bookmarkToggleResponse);
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<BookmarkedCourseListResponse>> getMyBookmarkedCourses(@AuthenticationPrincipal UserPrincipal user) {
         List<BookmarkedCourseListResponse> bookmarkedCourses = courseBookmarkService.getBookmarkedCourses(user.getId());
-        return ResponseEntity.ok().body(bookmarkedCourses);
+        return ResponseEntity.ok(bookmarkedCourses);
     }
 }
