@@ -62,7 +62,16 @@ public enum ErrorCode {
     ACCOUNT_LOCKED(HttpStatus.LOCKED, "A002", "계정이 잠겨있습니다."),
     TOO_MANY_LOGIN_ATTEMPTS(HttpStatus.TOO_MANY_REQUESTS, "A003", "로그인 시도 횟수를 초과했습니다."),
     EMAIL_VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "A004", "이메일 인증이 필요합니다."),
-    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "A005", "유효하지 않은 인증 코드입니다.");
+    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "A005", "유효하지 않은 인증 코드입니다."),
+
+    // ===== 위치 관련 에러 (L: Location) =====
+    LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "L001", "위치 정보를 찾을 수 없습니다."),
+    LOCATION_UPDATE_REQUIRED(HttpStatus.BAD_REQUEST, "L002", "위치 정보 업데이트가 필요합니다."),
+    INVALID_COORDINATES(HttpStatus.BAD_REQUEST, "L003", "유효하지 않은 좌표입니다."),
+    LOCATION_SHARING_DISABLED(HttpStatus.FORBIDDEN, "L004", "위치 공유가 비활성화되어 있습니다."),
+    LOCATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "L005", "위치 정보에 접근할 권한이 없습니다."),
+    GPS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "L006", "GPS 권한이 거부되었습니다."),
+    LOCATION_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "L007", "위치 서비스를 사용할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
