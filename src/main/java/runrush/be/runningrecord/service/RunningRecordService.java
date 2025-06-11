@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
+import runrush.be.common.util.GeoUtils;
 import runrush.be.kakao.client.KakaoMapApiClient;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
@@ -80,7 +81,7 @@ public class RunningRecordService {
     @Transactional(readOnly = true)
     public RunningRecordResponse getRunningRecord(Long recordId, String email) {
         RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 기록입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않거나 삭제된 기록입니다."));
 
         if (!runningRecord.getUser().getEmail().equals(email)) {
             throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 조회할 수 있습니다.");
@@ -106,7 +107,7 @@ public class RunningRecordService {
     @Transactional(readOnly = true)
     public RunningRecord validateRunningRecord(Long recordId, Long userId) {
         RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
-                .orElseThrow(() -> new IllegalArgumentException("기록이 존재하지 않거나 삭제되었습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "기록이 존재하지 않거나 삭제되었습니다."));
 
         if (!runningRecord.getUser().getId().equals(userId)) {
             throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 추천할 수 있습니다.");
@@ -155,12 +156,12 @@ public class RunningRecordService {
 
             String type = jsonNode.get("type").asText();
             if (!"LineString".equals(type)) {
-                throw new IllegalArgumentException("잘못된 경로 형식입니다. LineString 형식이어야 합니다.");
+                throw new BusinessException(ErrorCode.INVALID_REQUEST, "잘못된 경로 형식입니다. LineString 형식이어야 합니다.");
             }
 
             JsonNode coordinates = jsonNode.get("coordinates");
             if (coordinates == null || !coordinates.isArray() || coordinates.size() < 2) {
-                throw new IllegalArgumentException("경로 좌표가 올바르지 않습니다.");
+                throw new BusinessException(ErrorCode.INVALID_REQUEST, "경로 좌표가 올바르지 않습니다.");
             }
 
             double totalDistance = 0.0;
@@ -174,7 +175,7 @@ public class RunningRecordService {
                 double lon2 = curr.get(0).asDouble();
                 double lat2 = curr.get(1).asDouble();
 
-                totalDistance += haversine(lat1, lon1, lat2, lon2);
+                totalDistance += GeoUtils.calculateDistanceInMeters(lat1, lon1, lat2, lon2);
             }
             return totalDistance;
         } catch (BusinessException e) {
@@ -183,19 +184,5 @@ public class RunningRecordService {
             log.error("GeoJSON 파싱 오류: {}", e.getMessage());
             throw new BusinessException(ErrorCode.INVALID_REQUEST, "경로 정보를 처리하는 중 오류가 발생했습니다");
         }
-    }
-
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        int R = 6371;
-
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c * 1000;
     }
 }

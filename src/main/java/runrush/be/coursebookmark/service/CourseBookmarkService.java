@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
 import runrush.be.coursebookmark.domain.CourseBookmark;
-import runrush.be.coursebookmark.dto.BookmarkToggleResponse;
+import runrush.be.coursebookmark.dto.BookmarkResponse;
 import runrush.be.coursebookmark.dto.BookmarkedCourseListResponse;
 import runrush.be.coursebookmark.repository.CourseBookmarkRepository;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
@@ -27,7 +27,7 @@ public class CourseBookmarkService {
     private final RecommendedCourseRepository recommendedCourseRepository;
 
     @Transactional
-    public BookmarkToggleResponse toggleBookmark(Long userId, Long courseId) {
+    public BookmarkResponse setBookmark(Long userId, Long courseId, Boolean isBookmarked) {
         User user = userService.findUserById(userId);
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
@@ -36,22 +36,37 @@ public class CourseBookmarkService {
             throw new BusinessException(ErrorCode.INVALID_REQUEST, "본인이 등록한 코스는 즐겨찾기 할 수 없습니다.");
         }
 
-        Optional<CourseBookmark> existsBookmark = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
-        if (existsBookmark.isPresent()) {
-            courseBookmarkRepository.delete(existsBookmark.get());
-            log.info("북마크 해제: courseId={}", courseId);
+        Optional<CourseBookmark> existingBookmark = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
 
-            return BookmarkToggleResponse.bookmarked();
+        if (isBookmarked) {
+            if (existingBookmark.isEmpty()) {
+                CourseBookmark bookmark = CourseBookmark.builder()
+                        .user(user)
+                        .course(recommendedCourse)
+                        .build();
+                courseBookmarkRepository.save(bookmark);
+                log.info("북마크 추가: userId={}, courseId={}", userId, courseId);
+            }
+            return BookmarkResponse.bookmarked(courseId);
+
         } else {
-            CourseBookmark bookmark = CourseBookmark.builder()
-                    .user(user)
-                    .course(recommendedCourse)
-                    .build();
-            courseBookmarkRepository.save(bookmark);
-            log.info("북마크 추가: courseId={}", courseId);
-
-            return BookmarkToggleResponse.unbookmarked();
+            if (existingBookmark.isPresent()) {
+                courseBookmarkRepository.delete(existingBookmark.get());
+                log.info("북마크 해제: userId={}, courseId={}", userId, courseId);
+            }
+            return BookmarkResponse.unbookmarked(courseId);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public BookmarkResponse getBookmarkStatus(Long userId, Long courseId) {
+        recommendedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+
+        boolean isBookmarked = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId)
+                .isPresent();
+
+        return BookmarkResponse.current(courseId, isBookmarked);
     }
 
     @Transactional(readOnly = true)
