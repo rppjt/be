@@ -3,10 +3,7 @@ package runrush.be.location.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
 import runrush.be.location.dto.LocationSharingRequest;
 import runrush.be.location.dto.LocationSharingResponse;
@@ -31,6 +28,12 @@ public class UserLocationController {
             @AuthenticationPrincipal UserPrincipal user,
             @RequestBody LocationSharingRequest request) {
         LocationSharingResponse response = userLocationService.setLocationSharing(user.getId(), request.isSharing());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/sharing")
+    public ResponseEntity<LocationSharingResponse> getLocationSharingStatus(@AuthenticationPrincipal UserPrincipal user) {
+        LocationSharingResponse response = userLocationService.getLocationSharingStatus(user.getId());
         return ResponseEntity.ok(response);
     }
 }
