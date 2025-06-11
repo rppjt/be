@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import runrush.be.auth.model.UserPrincipal;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.user.domain.User;
 import runrush.be.user.dto.UserInfoResponse;
 import runrush.be.user.dto.UserUpdateRequest;
@@ -21,7 +23,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<UserInfoResponse> getUserInfo(@AuthenticationPrincipal UserPrincipal user) {
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "인증이 필요합니다.");
         }
 
         User userByEmail = userService.findUserById(user.getId());
