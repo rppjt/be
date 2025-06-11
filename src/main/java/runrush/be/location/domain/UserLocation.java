@@ -2,12 +2,14 @@ package runrush.be.location.domain;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import runrush.be.common.util.GeoUtils;
 import runrush.be.user.domain.User;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @NoArgsConstructor
 @Table(name = "user_location")
