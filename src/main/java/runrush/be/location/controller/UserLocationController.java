@@ -8,7 +8,10 @@ import runrush.be.auth.model.UserPrincipal;
 import runrush.be.location.dto.LocationSharingRequest;
 import runrush.be.location.dto.LocationSharingResponse;
 import runrush.be.location.dto.LocationUpdateRequest;
+import runrush.be.location.dto.NearbyFriendResponse;
 import runrush.be.location.service.UserLocationService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/location")
@@ -35,5 +38,14 @@ public class UserLocationController {
     public ResponseEntity<LocationSharingResponse> getLocationSharingStatus(@AuthenticationPrincipal UserPrincipal user) {
         LocationSharingResponse response = userLocationService.getLocationSharingStatus(user.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<NearbyFriendResponse>> getNearbyFriends(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(defaultValue = "0.5") Double radius) {
+
+        List<NearbyFriendResponse> nearbyFriends = userLocationService.getNearbyFriends(user.getId(), radius);
+        return ResponseEntity.ok(nearbyFriends);
     }
 }
