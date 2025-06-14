@@ -32,7 +32,7 @@ public class RecommendedCourseService {
         RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, userId);
 
         if (recommendedCourseRepository.existsBySourceRecordId(recordId)) {
-            throw new BusinessException(ErrorCode.ALREADY_FRIENDS, "이미 추천된 기록입니다.");
+            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ALREADY_EXISTS, "이미 추천된 기록입니다.");
         }
 
         String title = name + "님의 추천 코스 #" + recordId;

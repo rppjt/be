@@ -45,6 +45,11 @@ public enum ErrorCode {
     POST_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "P004", "게시글 내용은 필수입니다."),
     POST_TITLE_TOO_LONG(HttpStatus.BAD_REQUEST, "P005", "게시글 제목이 너무 깁니다."),
 
+    // ===== 추천 코스 관련 에러 (RC: Recommended Course) =====
+    RECOMMENDED_COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "RC001", "추천 코스를 찾을 수 없습니다."),
+    RECOMMENDED_COURSE_ALREADY_EXISTS(HttpStatus.CONFLICT, "RC002", "이미 추천된 기록입니다."),
+    RECOMMENDED_COURSE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "RC003", "추천 코스에 접근할 권한이 없습니다."),
+
     // ===== 댓글 관련 에러 (CM: Comment) =====
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CM001", "댓글을 찾을 수 없습니다."),
     COMMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "CM002", "댓글에 접근할 권한이 없습니다."),

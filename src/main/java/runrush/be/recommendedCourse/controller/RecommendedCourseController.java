@@ -21,10 +21,10 @@ import java.util.List;
 public class RecommendedCourseController {
     private final RecommendedCourseService recommendedCourseService;
 
-    @PostMapping("/{courseId}")
-    public ResponseEntity<Void> createCourse(@PathVariable Long courseId,
+    @PostMapping("/{recordId}")
+    public ResponseEntity<Void> createCourse(@PathVariable Long recordId,
                                              @AuthenticationPrincipal UserPrincipal user) {
-        recommendedCourseService.createRecommendedCourse(courseId, user.getId(), user.getName());
+        recommendedCourseService.createRecommendedCourse(recordId, user.getId(), user.getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

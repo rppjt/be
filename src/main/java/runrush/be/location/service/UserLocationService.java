@@ -75,13 +75,23 @@ public class UserLocationService {
 
     @Transactional(readOnly = true)
     public List<NearbyFriendResponse> getNearbyFriends(Long userId, Double radiusKm) {
-        UserLocation userLocation = userLocationRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.LOCATION_NOT_FOUND, "사용자의 위치 정보가 없습니다. 먼저 위치를 업데이트해주세요."));
+        Optional<UserLocation> userLocationOpt = userLocationRepository.findById(userId);
+        if (userLocationOpt.isEmpty()) {
+            log.debug("사용자 {} 위치 정보 없음, 빈 친구 목록 반환", userId);
+            return List.of();
+        }
+
+        UserLocation userLocation = userLocationOpt.get();
 
         LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(10);
         List<UserLocation> friendLocations = userLocationRepository.findFriendsWithActiveLocation(userId, cutoffTime);
 
         log.debug("사용자 {} 주변 친구 조회: 활성 친구 {}명, 반경 {}km", userId, friendLocations.size(), radiusKm);
+
+        if (friendLocations.isEmpty()) {
+            log.debug("사용자 {} 주변에 활성 친구 없음", userId);
+            return List.of();
+        }
 
         return friendLocations.stream()
                 .map(location -> {
