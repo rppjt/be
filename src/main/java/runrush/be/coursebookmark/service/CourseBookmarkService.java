@@ -30,10 +30,10 @@ public class CourseBookmarkService {
     public BookmarkResponse setBookmark(Long userId, Long courseId, Boolean isBookmarked) {
         User user = userService.findUserById(userId);
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
         if (recommendedCourse.getUser().getId().equals(user.getId())) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST, "본인이 등록한 코스는 즐겨찾기 할 수 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
         Optional<CourseBookmark> existingBookmark = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
@@ -61,7 +61,7 @@ public class CourseBookmarkService {
     @Transactional(readOnly = true)
     public BookmarkResponse getBookmarkStatus(Long userId, Long courseId) {
         recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
         boolean isBookmarked = courseBookmarkRepository.findByUserIdAndRecommendedCourseId(userId, courseId)
                 .isPresent();

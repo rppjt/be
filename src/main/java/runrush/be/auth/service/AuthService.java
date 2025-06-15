@@ -18,7 +18,7 @@ public class AuthService {
 
     public void logout(String accessToken, HttpServletResponse response) {
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            throw new BusinessException(ErrorCode.INVALID_TOKEN, "유효한 토큰 형식이 아닙니다.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
         String token = accessToken.substring(7);

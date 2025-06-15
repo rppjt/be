@@ -61,7 +61,7 @@ public class RunningStatsService {
 
         if (month != null && year != null) {
             if (month < 1 || month > 12) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST, "월은 1-12 사이의 값이어야 합니다. 입력값: " + month);
+                throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
             date = LocalDate.of(year, month, 1);
         } else {

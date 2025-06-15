@@ -37,7 +37,7 @@ public class UserService {
 
         if (request.nickname() != null && !user.getNickname().equals(request.nickname())) {
             if (userRepository.existsByNickname(request.nickname())) {
-                throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS, "이미 사용 중인 닉네임입니다.");
+                throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
             }
             user.updateNickname(request.nickname());
         }

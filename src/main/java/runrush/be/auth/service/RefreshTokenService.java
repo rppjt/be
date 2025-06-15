@@ -26,7 +26,7 @@ public class RefreshTokenService {
     @Transactional
     public String renewAccessToken(String token) {
         RefreshToken refreshToken = findByToken(token)
-                .orElseThrow(() -> new RuntimeException("리프레시 토큰이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED));
 
         verifyExpiration(refreshToken);
 
@@ -54,12 +54,12 @@ public class RefreshTokenService {
     private void verifyExpiration(RefreshToken token) {
         if (token.getExpiresAt().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
-            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
         if(!jwtTokenProvider.validateToken(token.getToken())) {
             refreshTokenRepository.delete(token);
-            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED, "리프레시 토큰이 유효하지 않습니다. 다시 로그인해주세요.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
     }
 }

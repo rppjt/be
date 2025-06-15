@@ -41,7 +41,7 @@ public class UserLocationService {
                     ? LocationSharingResponse.enabled(userId)
                     : LocationSharingResponse.disabled(userId);
         } else {
-            throw new BusinessException(ErrorCode.LOCATION_UPDATE_REQUIRED, "위치 정보가 없습니다. 먼저 위치를 업데이트해주세요.");
+            throw new BusinessException(ErrorCode.LOCATION_UPDATE_REQUIRED);
         }
     }
 

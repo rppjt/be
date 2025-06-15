@@ -38,36 +38,29 @@ public enum ErrorCode {
     ALREADY_FRIENDS(HttpStatus.CONFLICT, "F004", "이미 친구 관계입니다."),
     FRIEND_REQUEST_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "F005", "이미 처리된 친구 요청입니다."),
 
-    // ===== 게시글 관련 에러 (P: Post) =====
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "게시글을 찾을 수 없습니다."),
-    POST_ACCESS_DENIED(HttpStatus.FORBIDDEN, "P002", "게시글에 접근할 권한이 없습니다."),
-    POST_TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "P003", "게시글 제목은 필수입니다."),
-    POST_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "P004", "게시글 내용은 필수입니다."),
-    POST_TITLE_TOO_LONG(HttpStatus.BAD_REQUEST, "P005", "게시글 제목이 너무 깁니다."),
+    // ===== 러닝 기록 관련 에러 (RR: Running Record) =====
+    RUNNING_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "RR001", "러닝 기록을 찾을 수 없습니다."),
+    RUNNING_RECORD_ACCESS_DENIED(HttpStatus.FORBIDDEN, "RR002", "러닝 기록에 접근할 권한이 없습니다."),
+    RUNNING_RECORD_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "RR003", "이미 삭제된 러닝 기록입니다."),
+    RUNNING_RECORD_RESTORE_FAILED(HttpStatus.BAD_REQUEST, "RR004", "복구할 수 있는 러닝 기록이 없습니다."),
+    RUNNING_RECORD_DELETE_FAILED(HttpStatus.BAD_REQUEST, "RR005", "영구 삭제할 수 있는 러닝 기록이 없습니다."),
+    INVALID_RUNNING_TIME(HttpStatus.BAD_REQUEST, "RR006", "유효하지 않은 러닝 시간입니다."),
+    INVALID_PATH_DATA(HttpStatus.BAD_REQUEST, "RR007", "유효하지 않은 경로 데이터입니다."),
 
     // ===== 추천 코스 관련 에러 (RC: Recommended Course) =====
     RECOMMENDED_COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "RC001", "추천 코스를 찾을 수 없습니다."),
     RECOMMENDED_COURSE_ALREADY_EXISTS(HttpStatus.CONFLICT, "RC002", "이미 추천된 기록입니다."),
     RECOMMENDED_COURSE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "RC003", "추천 코스에 접근할 권한이 없습니다."),
 
-    // ===== 댓글 관련 에러 (CM: Comment) =====
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CM001", "댓글을 찾을 수 없습니다."),
-    COMMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "CM002", "댓글에 접근할 권한이 없습니다."),
-    COMMENT_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "CM003", "댓글 내용은 필수입니다."),
-    COMMENT_CONTENT_TOO_LONG(HttpStatus.BAD_REQUEST, "CM004", "댓글 내용이 너무 깁니다."),
+    // ===== 통계 관련 에러 (ST: Statistics) 신규 =====
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "ST001", "유효하지 않은 날짜 범위입니다."),
+    STATS_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "ST002", "통계 데이터가 없습니다."),
 
     // ===== 파일 관련 에러 (FL: File) =====
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FL001", "파일을 찾을 수 없습니다."),
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FL002", "파일 업로드에 실패했습니다."),
     INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "FL003", "지원하지 않는 파일 형식입니다."),
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "FL004", "파일 크기가 제한을 초과했습니다."),
-
-    // ===== 인증/인가 관련 에러 (A: Auth) =====
-    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "A001", "로그인에 실패했습니다."),
-    ACCOUNT_LOCKED(HttpStatus.LOCKED, "A002", "계정이 잠겨있습니다."),
-    TOO_MANY_LOGIN_ATTEMPTS(HttpStatus.TOO_MANY_REQUESTS, "A003", "로그인 시도 횟수를 초과했습니다."),
-    EMAIL_VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "A004", "이메일 인증이 필요합니다."),
-    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "A005", "유효하지 않은 인증 코드입니다."),
 
     // ===== 위치 관련 에러 (L: Location) =====
     LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "L001", "위치 정보를 찾을 수 없습니다."),

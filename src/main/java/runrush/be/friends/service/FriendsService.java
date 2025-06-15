@@ -52,7 +52,7 @@ public class FriendsService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         if (pendingRequest.getStatus() != FriendStatus.PENDING) {
-            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED, "대기 중인 친구 요청이 아닙니다.");
+            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED);
         }
 
         User target = userService.findUserById(targetId);
@@ -84,7 +84,7 @@ public class FriendsService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         if (pendingRequest.getStatus() != FriendStatus.PENDING) {
-            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED, "대기 중인 친구 요청이 아닙니다.");
+            throw new BusinessException(ErrorCode.FRIEND_REQUEST_ALREADY_PROCESSED);
         }
 
         friendsRepository.deleteFriendsRequest(requesterId, targetId);
@@ -98,7 +98,7 @@ public class FriendsService {
                 .orElse(false);
 
         if (!isFriend) {
-            throw new BusinessException(ErrorCode.ALREADY_FRIENDS, "친구 관계가 아닙니다.");
+            throw new BusinessException(ErrorCode.ALREADY_FRIENDS);
         }
 
         friendsRepository.deleteAllFriends(userId, friendId);
