@@ -11,6 +11,8 @@ import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
 import runrush.be.common.util.GeoUtils;
 import runrush.be.kakao.client.KakaoMapApiClient;
+import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
@@ -30,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RunningRecordService {
     private final RunningRecordRepository runningRecordRepository;
+    private final RecommendedCourseRepository recommendedCourseRepository;
     private final UserService userService;
     private final KakaoMapApiClient kakaoMapApiClient;
     private final ImageUploadService imageUploadService;
@@ -37,6 +40,12 @@ public class RunningRecordService {
     @Transactional
     public void saveRunningRecord(RunningRecordRequest request, Long userId, MultipartFile image) {
         User user = userService.findUserById(userId);
+
+        RecommendedCourse recommendedCourse = null;
+        if (request.recommendedCourseId() != null) {
+            recommendedCourse = recommendedCourseRepository.findById(request.recommendedCourseId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND, "존재하지 않는 추천 코스입니다."));
+        }
 
         String imageUrl = imageUploadService.uploadImage(image, "running-record");
 
@@ -59,6 +68,7 @@ public class RunningRecordService {
 
         RunningRecord runningRecord = RunningRecord.builder()
                 .user(user)
+                .recommendedCourse(recommendedCourse)
                 .imageUrl(imageUrl)
                 .pathGeoJson(request.pathGeoJson())
                 .totalDistance(totalDistance)
