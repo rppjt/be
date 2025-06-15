@@ -19,7 +19,8 @@ public record RunningRecordResponse(
         double endLongitude,
         String startLocationName,
         String endLocationName,
-        JsonNode pathGeoJson
+        JsonNode pathGeoJson,
+        RecommendedCourseInfo recommendedCourse
 ) {
     public static RunningRecordResponse toRecordResponse(RunningRecord record) {
         return new RunningRecordResponse(
@@ -35,7 +36,8 @@ public record RunningRecordResponse(
                 record.getEndLongitude(),
                 record.getStartLocationName(),
                 record.getEndLocationName(),
-                GeoJsonUtil.parseGeoJson(record.getPathGeoJson())
+                GeoJsonUtil.parseGeoJson(record.getPathGeoJson()),
+                RecommendedCourseInfo.from(record.getRecommendedCourse())
         );
     }
 }
