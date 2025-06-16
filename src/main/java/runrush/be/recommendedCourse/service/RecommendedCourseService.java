@@ -79,9 +79,7 @@ public class RecommendedCourseService {
             throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
         }
 
-        courseLikeRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
-        courseBookmarkRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
-        recommendedCourseRepository.delete(recommendedCourse);
+        recommendedCourse.courseDelete();
     }
 
     @Transactional(readOnly = true)
