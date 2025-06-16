@@ -137,7 +137,7 @@ public class RunningRecordService {
     @Transactional
     public void deleteRunningRecord(Long recordId, Long userId) {
         RunningRecord runningRecord = validateRunningRecord(recordId, userId);
-        runningRecord.recordDeleted();
+        runningRecord.recordDelete();
         log.info("러닝 기록 삭제 완료: recordId={}", recordId);
     }
 
