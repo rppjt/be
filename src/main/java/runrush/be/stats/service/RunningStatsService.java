@@ -5,20 +5,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
+import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.repository.RunningRecordRepository;
-import runrush.be.stats.dto.MonthlyStats;
-import runrush.be.stats.dto.PersonalBestStats;
-import runrush.be.stats.dto.WeeklyStats;
+import runrush.be.stats.dto.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +23,7 @@ import java.util.stream.Collectors;
 public class RunningStatsService {
 
     private final RunningRecordRepository runningRecordRepository;
+    private final RecommendedCourseRepository recommendedCourseRepository;
 
     private record BasicStats(
             int totalRuns,
@@ -37,7 +35,7 @@ public class RunningStatsService {
     }
 
     @Transactional(readOnly = true)
-    public WeeklyStats getWeeklyStats(Long userId, int weekOffset) {
+    public WeeklyStatsResponse getWeeklyStats(Long userId, int weekOffset) {
         LocalDate today = LocalDate.now().plusWeeks(weekOffset);
         LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
@@ -48,7 +46,7 @@ public class RunningStatsService {
         List<RunningRecord> weeklyRecords = runningRecordRepository.findWeeklyRecords(userId, startDateTime, endDateTime);
 
         if (weeklyRecords.isEmpty()) {
-            return WeeklyStats.empty(startOfWeek, endOfWeek);
+            return WeeklyStatsResponse.empty(startOfWeek, endOfWeek);
         }
 
         return calculateWeeklyStats(weeklyRecords, startOfWeek, endOfWeek);
@@ -56,12 +54,12 @@ public class RunningStatsService {
 
 
     @Transactional(readOnly = true)
-    public MonthlyStats getMonthlyStats(Long userId, Integer year, Integer month, Integer monthOffset) {
+    public MonthlyStatsResponse getMonthlyStats(Long userId, Integer year, Integer month, Integer monthOffset) {
         LocalDate date;
 
         if (month != null && year != null) {
             if (month < 1 || month > 12) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST, "월은 1-12 사이의 값이어야 합니다. 입력값: " + month);
+                throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
             date = LocalDate.of(year, month, 1);
         } else {
@@ -72,21 +70,144 @@ public class RunningStatsService {
         List<RunningRecord> monthlyRecords = runningRecordRepository.findMonthlyRecords(userId, date.getYear(), date.getMonthValue());
 
         if (monthlyRecords.isEmpty()) {
-            return MonthlyStats.empty(date.getMonthValue(), date.getYear());
+            return MonthlyStatsResponse.empty(date.getMonthValue(), date.getYear());
         }
 
         return calculateMonthlyStats(monthlyRecords, date.getYear(), date.getMonthValue());
     }
 
     @Transactional(readOnly = true)
-    public PersonalBestStats getPersonalBestStats(Long userId) {
+    public PersonalBestStatsResponse getPersonalBestStats(Long userId) {
         List<RunningRecord> records = runningRecordRepository.findByUserIdAndIsDeletedFalse(userId);
 
         if (records.isEmpty()) {
-            return PersonalBestStats.empty();
+            return PersonalBestStatsResponse.empty();
         }
 
         return calculatePersonalBestStats(records);
+    }
+
+    /**
+     * 특정 추천 코스의 상세 통계 조회
+     */
+    @Transactional(readOnly = true)
+    public RecommendedCourseDetailStatsResponse getRecommendedCourseDetailStats(Long courseId, Long userId) {
+        RecommendedCourse course = recommendedCourseRepository.findByCourseId(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
+
+        List<RunningRecord> courseRecords = runningRecordRepository.findByRecommendedCourseIdWithDetails(courseId);
+
+        int totalCompletionCount = courseRecords.size();
+
+        int uniqueRunnerCount = (int) courseRecords.stream()
+                .map(record -> record.getUser().getId())
+                .distinct()
+                .count();
+
+        double averageCompletionTime = courseRecords.stream()
+                .mapToLong(RunningRecord::getTotalTime)
+                .average()
+                .orElse(0.0);
+
+        double averagePace = courseRecords.stream()
+                .mapToDouble(RunningRecord::getPace)
+                .filter(pace -> pace > 0)
+                .average()
+                .orElse(0.0);
+
+        List<RunningRecord> myRecords = courseRecords.stream()
+                .filter(record -> record.getUser().getId().equals(userId))
+                .toList();
+
+        int myCompletionCount = myRecords.size();
+
+        Double myBestTime = myRecords.stream()
+                .map(RunningRecord::getTotalTime)
+                .min(Long::compareTo)
+                .map(Long::doubleValue)
+                .orElse(null);
+
+        Double myAveragePace = myRecords.stream()
+                .mapToDouble(RunningRecord::getPace)
+                .average()
+                .orElse(Double.NaN);
+        if (Double.isNaN(myAveragePace)) myAveragePace = null;
+
+        // 상위 러너 TOP 5 계산
+        List<CourseTopRunnerResponse> topRunners = courseRecords.stream()
+                .collect(Collectors.groupingBy(
+                        record -> record.getUser().getName(),
+                        Collectors.minBy(Comparator.comparing(RunningRecord::getTotalTime))
+                ))
+                .values().stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .sorted(Comparator.comparing(RunningRecord::getTotalTime))
+                .limit(5)
+                .map(record -> new CourseTopRunnerResponse(
+                        record.getUser().getName(),
+                        record.getTotalTime(),
+                        record.getPace()
+                ))
+                .toList();
+
+        return new RecommendedCourseDetailStatsResponse(
+                courseId,
+                course.getTitle(),
+                course.getUser().getName(),
+                course.getTotalDistance() / 1000.0,
+                totalCompletionCount,
+                uniqueRunnerCount,
+                averageCompletionTime,
+                Math.round(averagePace * 100.0) / 100.0,
+                myCompletionCount,
+                myBestTime,
+                myAveragePace != null ? Math.round(myAveragePace * 100.0) / 100.0 : null,
+                topRunners
+        );
+    }
+
+    /**
+     * 인기 추천 코스 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<PopularRecommendedCourseResponse> getPopularRecommendedCourses() {
+        List<RunningRecord> allRecords = runningRecordRepository.findAllRecommendedCourseRecords();
+        List<RecommendedCourse> allCourses = recommendedCourseRepository.findAllWithUser();
+
+        Map<Long, List<RunningRecord>> recordsByCourse = allRecords.stream()
+                .filter(record -> record.getRecommendedCourse() != null)
+                .filter(record -> !record.getRecommendedCourse().isDeleted())
+                .collect(Collectors.groupingBy(record -> record.getRecommendedCourse().getId()));
+
+        return allCourses.stream()
+                .map(course -> {
+                    List<RunningRecord> courseRecords = recordsByCourse.getOrDefault(course.getId(), List.of());
+
+                    int totalCompletionCount = courseRecords.size();
+                    int uniqueRunnerCount = (int) courseRecords.stream()
+                            .map(record -> record.getUser().getId())
+                            .distinct()
+                            .count();
+
+                    double averagePace = courseRecords.stream()
+                            .mapToDouble(RunningRecord::getPace)
+                            .average()
+                            .orElse(0.0);
+
+                    return new PopularRecommendedCourseResponse(
+                            course.getId(),
+                            course.getTitle(),
+                            course.getUser().getName(),
+                            course.getTotalDistance() / 1000.0,
+                            totalCompletionCount,
+                            uniqueRunnerCount,
+                            Math.round(averagePace * 100.0) / 100.0
+                    );
+                })
+                .sorted(Comparator.comparing(PopularRecommendedCourseResponse::totalCompletionCount).reversed())
+                .limit(10)
+                .toList();
     }
 
     private BasicStats calculateBasicStats(List<RunningRecord> records) {
@@ -116,10 +237,10 @@ public class RunningStatsService {
                 Math.round(averageDistance * 100.0) / 100.0);
     }
 
-    private WeeklyStats calculateWeeklyStats(List<RunningRecord> records, LocalDate startOfWeek, LocalDate endOfWeek) {
+    private WeeklyStatsResponse calculateWeeklyStats(List<RunningRecord> records, LocalDate startOfWeek, LocalDate endOfWeek) {
         BasicStats basic = calculateBasicStats(records);
 
-        return new WeeklyStats(
+        return new WeeklyStatsResponse(
                 basic.totalRuns(),
                 basic.totalDistance(),
                 basic.totalTime(),
@@ -130,7 +251,7 @@ public class RunningStatsService {
         );
     }
 
-    private MonthlyStats calculateMonthlyStats(List<RunningRecord> records, int year, int month) {
+    private MonthlyStatsResponse calculateMonthlyStats(List<RunningRecord> records, int year, int month) {
         BasicStats basic = calculateBasicStats(records);
 
         int activeDays = (int) records.stream()
@@ -148,7 +269,7 @@ public class RunningStatsService {
                 .min()
                 .orElse(0.0);
 
-        return new MonthlyStats(
+        return new MonthlyStatsResponse(
                 basic.totalRuns,
                 basic.totalDistance,
                 basic.totalTime,
@@ -162,7 +283,7 @@ public class RunningStatsService {
         );
     }
 
-    private PersonalBestStats calculatePersonalBestStats(List<RunningRecord> records) {
+    private PersonalBestStatsResponse calculatePersonalBestStats(List<RunningRecord> records) {
         BasicStats basic = calculateBasicStats(records);
 
         double longestDistance = records.stream()
@@ -178,9 +299,9 @@ public class RunningStatsService {
                 .mapToLong(RunningRecord::getTotalTime)
                 .max().orElse(0L);
 
-        PersonalBestStats.BestMonthRecord bestMonthRecord = calculateBestMonthRecord(records);
+        PersonalBestStatsResponse.BestMonthRecord bestMonthRecord = calculateBestMonthRecord(records);
 
-        return new PersonalBestStats(
+        return new PersonalBestStatsResponse(
                 Math.round(longestDistance * 100.0) / 100.0,
                 Math.round(fastestPace * 100.0) / 100.0,
                 longestTime,
@@ -190,7 +311,7 @@ public class RunningStatsService {
         );
     }
 
-    private PersonalBestStats.BestMonthRecord calculateBestMonthRecord(List<RunningRecord> records) {
+    private PersonalBestStatsResponse.BestMonthRecord calculateBestMonthRecord(List<RunningRecord> records) {
         int currentYear = LocalDate.now().getYear();
 
         Map<Integer, Set<LocalDate>> monthlyDates = records.stream()
@@ -205,10 +326,10 @@ public class RunningStatsService {
 
         return monthlyDates.entrySet().stream()
                 .max(Map.Entry.comparingByValue(Comparator.comparing(Set::size)))
-                .map(entry -> new PersonalBestStats.BestMonthRecord(
+                .map(entry -> new PersonalBestStatsResponse.BestMonthRecord(
                         entry.getKey(),
                         entry.getValue().size()
                 ))
-                .orElse(new PersonalBestStats.BestMonthRecord(0, 0));
+                .orElse(new PersonalBestStatsResponse.BestMonthRecord(0, 0));
     }
 }

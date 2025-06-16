@@ -58,10 +58,10 @@ public class ImageUploadService {
 
         } catch (IOException e) {
             log.error("파일 읽기 실패", e);
-            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED, "파일 업로드 중 오류가 발생했습니다.");
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         } catch (S3Exception e) {
             log.error("S3 업로드 실패", e);
-            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED, "S3 업로드에 실패했습니다: " + e.awsErrorDetails().errorMessage());
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
 
     }
@@ -86,21 +86,21 @@ public class ImageUploadService {
             throw e;
         } catch (S3Exception e) {
             log.error("S3 이미지 삭제 실패: {}", imageUrl, e);
-            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED, "이미지 삭제에 실패했습니다.");
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         } catch (Exception e) {
             log.error("예상치 못한 이미지 삭제 오류: {}", imageUrl, e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "이미지 삭제 중 예상치 못한 오류가 발생했습니다.");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST, "파일이 존재하지 않습니다.");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
         String fileName = file.getOriginalFilename();
         if (fileName == null || !fileName.contains(".") || !hasValidExtension(fileName)) {
-            throw new BusinessException(ErrorCode.INVALID_FILE_FORMAT, "지원하지 않는 파일 형식입니다. (jpg, jpeg, png, gif)");
+            throw new BusinessException(ErrorCode.INVALID_FILE_FORMAT);
         }
     }
 
@@ -125,7 +125,7 @@ public class ImageUploadService {
             String path = url.getPath();
 
             if (path == null || path.isEmpty()) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST, "URL 경로가 없습니다.");
+                throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
 
             return path.startsWith("/") ? path.substring(1) : path;
@@ -133,7 +133,7 @@ public class ImageUploadService {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST, "잘못된 이미지 URL 형식입니다: " + imageUrl);
+            throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
     }
 }

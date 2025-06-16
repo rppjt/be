@@ -47,13 +47,15 @@ public class RecommendedCourse {
     @Column(name = "total_distance")
     private double totalDistance;
 
-    private double latitude;
-
-    private double longitude;
-
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
     public RecommendedCourse(User user,
@@ -82,5 +84,19 @@ public class RecommendedCourse {
 
     public void changeDescription(String description) {
         this.description = description;
+    }
+
+    public void courseDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.isDeleted = false;
+        this.deletedAt = null;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
     }
 }

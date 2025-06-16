@@ -39,5 +39,30 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
                                            @Param("month") int month);
 
     Optional<RunningRecord> findByIdAndUserIdAndIsDeletedTrue(Long id, Long userId);
+
     List<RunningRecord> findByUserIdAndIsDeletedTrue(Long userId);
+
+    /**
+     * 특정 추천 코스 완주 기록들
+     */
+    @Query("SELECT rr FROM RunningRecord rr " +
+            "JOIN FETCH rr.user " +
+            "LEFT JOIN FETCH rr.recommendedCourse rc " +
+            "LEFT JOIN FETCH rc.user " +
+            "WHERE rr.recommendedCourse.id = :courseId AND rr.isDeleted = false " +
+            "AND (rc IS NULL OR rc.isDeleted = false) " +
+            "ORDER BY rr.totalTime ASC")
+    List<RunningRecord> findByRecommendedCourseIdWithDetails(@Param("courseId") Long courseId);
+
+    /**
+     * 모든 추천 코스 기록들
+     */
+    @Query("SELECT rr FROM RunningRecord rr " +
+            "LEFT JOIN FETCH rr.recommendedCourse rc " +
+            "LEFT JOIN FETCH rc.user " +
+            "LEFT JOIN FETCH rr.user " +
+            "WHERE rr.recommendedCourse IS NOT NULL AND rr.isDeleted = false " +
+            "AND (rc IS NULL OR rc.isDeleted = false) " +
+            "ORDER BY rr.recommendedCourse.id")
+    List<RunningRecord> findAllRecommendedCourseRecords();
 }

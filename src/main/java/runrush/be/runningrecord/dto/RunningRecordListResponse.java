@@ -10,7 +10,8 @@ public record RunningRecordListResponse(
         long totalTime,
         double pace,
         String endLocationName,
-        LocalDateTime createAt
+        LocalDateTime createAt,
+        RecommendedCourseInfo recommendedCourse
 ) {
     public static RunningRecordListResponse toRecordListResponse(RunningRecord record) {
         return new RunningRecordListResponse(
@@ -19,7 +20,8 @@ public record RunningRecordListResponse(
                 record.getTotalTime(),
                 record.getPace(),
                 record.getEndLocationName(),
-                record.getCreatedAt()
+                record.getCreatedAt(),
+                RecommendedCourseInfo.from(record.getRecommendedCourse())
         );
     }
 }

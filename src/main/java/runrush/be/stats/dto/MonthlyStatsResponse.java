@@ -1,6 +1,6 @@
 package runrush.be.stats.dto;
 
-public record MonthlyStats(
+public record MonthlyStatsResponse(
         int totalRuns,
         double totalDistance,
         long totalTime,
@@ -14,7 +14,7 @@ public record MonthlyStats(
         int month,
         int year
 ) {
-    public static MonthlyStats empty(int month, int year) {
-        return new MonthlyStats(0, 0.0, 0L, 0.0, 0.0, 0, 0.0, 0.0, month, year);
+    public static MonthlyStatsResponse empty(int month, int year) {
+        return new MonthlyStatsResponse(0, 0.0, 0L, 0.0, 0.0, 0, 0.0, 0.0, month, year);
     }
 }

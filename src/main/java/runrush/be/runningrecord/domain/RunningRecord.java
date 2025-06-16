@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.user.domain.User;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,10 @@ public class RunningRecord {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recommended_course_id")
+    private RecommendedCourse recommendedCourse;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -77,6 +82,7 @@ public class RunningRecord {
     @Builder
     public RunningRecord(
             User user,
+            RecommendedCourse recommendedCourse,
             String imageUrl,
             String startLocationName,
             String endLocationName,
@@ -92,6 +98,7 @@ public class RunningRecord {
             double pace
     ) {
         this.user = user;
+        this.recommendedCourse = recommendedCourse;
         this.imageUrl = imageUrl;
         this.startLocationName = startLocationName;
         this.endLocationName = endLocationName;
@@ -107,7 +114,7 @@ public class RunningRecord {
         this.pace = pace;
     }
 
-    public void recordDeleted() {
+    public void recordDelete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }

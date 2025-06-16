@@ -9,6 +9,7 @@ public record RunningRecordRequest(
         double endLatitude,
         double endLongitude,
         LocalDateTime startedTime,
-        LocalDateTime endedTime
+        LocalDateTime endedTime,
+        Long recommendedCourseId
 ) {
 }

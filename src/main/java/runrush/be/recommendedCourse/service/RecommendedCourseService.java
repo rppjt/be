@@ -32,7 +32,7 @@ public class RecommendedCourseService {
         RunningRecord runningRecord = runningRecordService.validateRunningRecord(recordId, userId);
 
         if (recommendedCourseRepository.existsBySourceRecordId(recordId)) {
-            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ALREADY_EXISTS, "이미 추천된 기록입니다.");
+            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ALREADY_EXISTS);
         }
 
         String title = name + "님의 추천 코스 #" + recordId;
@@ -55,10 +55,10 @@ public class RecommendedCourseService {
     @Transactional
     public void updateRecommendedCourse(Long courseId, Long userId, RecommendedCourseUpdateRequest request) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
-        if (!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "등록한 사용자만 수정이 가능합니다.");
+        if (!recommendedCourse.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
         }
 
         if (request.title() != null && !request.title().isBlank()) {
@@ -73,21 +73,19 @@ public class RecommendedCourseService {
     @Transactional
     public void deleteRecommendedCourse(Long courseId, Long userId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
-        if (!(recommendedCourse.getUser().getId().equals(userId))) {
-            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "등록한 사용자만 삭제 가능합니다.");
+        if (!recommendedCourse.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
         }
 
-        courseLikeRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
-        courseBookmarkRepository.deleteByRecommendedCourseId(recommendedCourse.getId());
-        recommendedCourseRepository.delete(recommendedCourse);
+        recommendedCourse.courseDelete();
     }
 
     @Transactional(readOnly = true)
     public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId, Long userId) {
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
         long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
         boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);

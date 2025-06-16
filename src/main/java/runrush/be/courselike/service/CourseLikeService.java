@@ -28,7 +28,7 @@ public class CourseLikeService {
     public void likeToggle(Long userId, Long courseId) {
         User user = userService.findUserById(userId);
         RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 코스입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
         Optional<CourseLike> existsLike = courseLikeRepository.findByUserIdAndRecommendedCourseId(userId, courseId);
         if (existsLike.isPresent()) {

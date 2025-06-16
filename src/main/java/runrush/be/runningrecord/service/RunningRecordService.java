@@ -11,6 +11,8 @@ import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
 import runrush.be.common.util.GeoUtils;
 import runrush.be.kakao.client.KakaoMapApiClient;
+import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.dto.RunningRecordListResponse;
 import runrush.be.runningrecord.dto.RunningRecordRequest;
@@ -30,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RunningRecordService {
     private final RunningRecordRepository runningRecordRepository;
+    private final RecommendedCourseRepository recommendedCourseRepository;
     private final UserService userService;
     private final KakaoMapApiClient kakaoMapApiClient;
     private final ImageUploadService imageUploadService;
@@ -37,6 +40,20 @@ public class RunningRecordService {
     @Transactional
     public void saveRunningRecord(RunningRecordRequest request, Long userId, MultipartFile image) {
         User user = userService.findUserById(userId);
+
+        if (request.startedTime().isAfter(request.endedTime())) {
+            throw new BusinessException(ErrorCode.INVALID_RUNNING_TIME);
+        }
+
+        if (Duration.between(request.startedTime(), request.endedTime()).getSeconds() <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_RUNNING_TIME);
+        }
+
+        RecommendedCourse recommendedCourse = null;
+        if (request.recommendedCourseId() != null) {
+            recommendedCourse = recommendedCourseRepository.findById(request.recommendedCourseId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
+        }
 
         String imageUrl = imageUploadService.uploadImage(image, "running-record");
 
@@ -59,6 +76,7 @@ public class RunningRecordService {
 
         RunningRecord runningRecord = RunningRecord.builder()
                 .user(user)
+                .recommendedCourse(recommendedCourse)
                 .imageUrl(imageUrl)
                 .pathGeoJson(request.pathGeoJson())
                 .totalDistance(totalDistance)
@@ -81,10 +99,10 @@ public class RunningRecordService {
     @Transactional(readOnly = true)
     public RunningRecordResponse getRunningRecord(Long recordId, String email) {
         RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "존재하지 않거나 삭제된 기록입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_RECORD_NOT_FOUND));
 
         if (!runningRecord.getUser().getEmail().equals(email)) {
-            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 조회할 수 있습니다.");
+            throw new BusinessException(ErrorCode.RUNNING_RECORD_ACCESS_DENIED);
         }
 
         return RunningRecordResponse.toRecordResponse(runningRecord);
@@ -107,10 +125,10 @@ public class RunningRecordService {
     @Transactional(readOnly = true)
     public RunningRecord validateRunningRecord(Long recordId, Long userId) {
         RunningRecord runningRecord = runningRecordRepository.findByIdAndIsDeletedFalse(recordId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "기록이 존재하지 않거나 삭제되었습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_RECORD_NOT_FOUND));
 
         if (!runningRecord.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.POST_ACCESS_DENIED, "본인의 기록만 추천할 수 있습니다.");
+            throw new BusinessException(ErrorCode.RUNNING_RECORD_ACCESS_DENIED);
         }
 
         return runningRecord;
@@ -119,14 +137,14 @@ public class RunningRecordService {
     @Transactional
     public void deleteRunningRecord(Long recordId, Long userId) {
         RunningRecord runningRecord = validateRunningRecord(recordId, userId);
-        runningRecord.recordDeleted();
+        runningRecord.recordDelete();
         log.info("러닝 기록 삭제 완료: recordId={}", recordId);
     }
 
     @Transactional
     public void restoreRunningRecord(Long recordId, Long userId) {
         RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "복구할 수 있는 기록이 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_RECORD_RESTORE_FAILED));
 
         record.restore();
         log.info("러닝 기록 복구 완료: recordId={}", recordId);
@@ -135,7 +153,7 @@ public class RunningRecordService {
     @Transactional
     public void permanentlyDeleteRecord(Long recordId, Long userId) {
         RunningRecord record = runningRecordRepository.findByIdAndUserIdAndIsDeletedTrue(recordId, userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "영구 삭제할 수 있는 기록이 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_RECORD_DELETE_FAILED));
 
         if (record.getImageUrl() != null) {
             try {
@@ -156,12 +174,12 @@ public class RunningRecordService {
 
             String type = jsonNode.get("type").asText();
             if (!"LineString".equals(type)) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST, "잘못된 경로 형식입니다. LineString 형식이어야 합니다.");
+                throw new BusinessException(ErrorCode.INVALID_PATH_DATA);
             }
 
             JsonNode coordinates = jsonNode.get("coordinates");
             if (coordinates == null || !coordinates.isArray() || coordinates.size() < 2) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST, "경로 좌표가 올바르지 않습니다.");
+                throw new BusinessException(ErrorCode.INVALID_PATH_DATA);
             }
 
             double totalDistance = 0.0;
@@ -182,7 +200,7 @@ public class RunningRecordService {
             throw e;
         } catch (Exception e) {
             log.error("GeoJSON 파싱 오류: {}", e.getMessage());
-            throw new BusinessException(ErrorCode.INVALID_REQUEST, "경로 정보를 처리하는 중 오류가 발생했습니다");
+            throw new BusinessException(ErrorCode.INVALID_PATH_DATA);
         }
     }
 }

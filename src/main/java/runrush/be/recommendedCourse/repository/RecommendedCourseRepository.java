@@ -15,35 +15,36 @@ public interface RecommendedCourseRepository extends JpaRepository<RecommendedCo
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
-            "WHERE rc.user.id = :userId")
+            "WHERE rc.user.id = :userId AND rc.isDeleted = false")
     List<RecommendedCourse> findWithUserByUserId(@Param("userId") Long userId);
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
-            "JOIN FETCH rc.user ")
+            "JOIN FETCH rc.user " +
+            "WHERE rc.isDeleted = false")
     List<RecommendedCourse> findAllWithUser();
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
-            "WHERE rc.id = :courseId")
+            "WHERE rc.id = :courseId AND rc.isDeleted = false")
     Optional<RecommendedCourse> findByCourseId(@Param("courseId") Long courseId);
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "LEFT JOIN CourseLike l ON l.recommendedCourse.id = rc.id " +
             "JOIN FETCH rc.user " +
-            "WHERE rc.user.id != :userId " +
+            "WHERE rc.user.id != :userId AND rc.isDeleted = false " +
             "GROUP BY rc.id " +
             "ORDER BY COUNT(l.id) DESC")
     List<RecommendedCourse> findAllOrderedByLikeCount(@Param("userId") Long userId);
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
-            "WHERE rc.user.id != :userId " +
+            "WHERE rc.user.id != :userId AND rc.isDeleted = false " +
             "ORDER BY rc.totalDistance DESC")
     List<RecommendedCourse> findAllOrderedByTotalDistance(@Param("userId") Long userId);
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
-            "WHERE rc.user.id != :userId " +
+            "WHERE rc.user.id != :userId AND rc.isDeleted = false " +
             "ORDER BY rc.createdAt DESC")
     List<RecommendedCourse> findAllOrderedByCreatedAt(@Param("userId") Long userId);
 }
