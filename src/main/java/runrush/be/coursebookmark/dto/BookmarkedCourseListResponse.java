@@ -10,8 +10,7 @@ public record BookmarkedCourseListResponse(
         String imageUrl,
         String title,
         double totalDistance,
-        double endLatitude,
-        double endLongitude,
+        String endLocationName,
         LocalDateTime bookmarkedAt
 ) {
     public static BookmarkedCourseListResponse toBookmarkedCourseListResponse(RecommendedCourse course, Long bookmarkId) {
@@ -21,8 +20,7 @@ public record BookmarkedCourseListResponse(
                 course.getImageUrl(),
                 course.getTitle(),
                 course.getTotalDistance(),
-                course.getLatitude(),
-                course.getLongitude(),
+                course.getEndLocationName(),
                 course.getCreatedAt()
         );
     }
