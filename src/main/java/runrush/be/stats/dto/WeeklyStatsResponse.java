@@ -2,7 +2,7 @@ package runrush.be.stats.dto;
 
 import java.time.LocalDate;
 
-public record WeeklyStats(
+public record WeeklyStatsResponse(
         int totalRuns,
         double totalDistance,
         long totalTime,
@@ -11,7 +11,7 @@ public record WeeklyStats(
         LocalDate startOfWeek,
         LocalDate endOfWeek
 ) {
-    public static WeeklyStats empty(LocalDate start, LocalDate end) {
-        return new WeeklyStats(0, 0, 0, 0, 0, start, end);
+    public static WeeklyStatsResponse empty(LocalDate start, LocalDate end) {
+        return new WeeklyStatsResponse(0, 0, 0, 0, 0, start, end);
     }
 }

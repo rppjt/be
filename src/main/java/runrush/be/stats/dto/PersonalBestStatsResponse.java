@@ -1,6 +1,6 @@
 package runrush.be.stats.dto;
 
-public record PersonalBestStats(
+public record PersonalBestStatsResponse(
         double longestDistance,
         double fastestPace,
         long longestTime,
@@ -16,8 +16,8 @@ public record PersonalBestStats(
     }
 
 
-    public static PersonalBestStats empty() {
-        return new PersonalBestStats(
+    public static PersonalBestStatsResponse empty() {
+        return new PersonalBestStatsResponse(
                 0.0,
                 0.0,
                 0L,
