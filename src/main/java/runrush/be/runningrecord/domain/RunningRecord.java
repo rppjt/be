@@ -114,7 +114,7 @@ public class RunningRecord {
         this.pace = pace;
     }
 
-    public void recordDeleted() {
+    public void recordDelete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }
