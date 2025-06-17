@@ -4,30 +4,22 @@ services:
     container_name: db
     environment:
       MYSQL_DATABASE: runrush_dev
-      MYSQL_USER: root
-      MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${DB_PASSWORD}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    command: --default-authentication-plugin=mysql_native_password
 
   app:
-    build: .
+    image: dnsjxo0616/runrush-app:latest
     container_name: spring-app
     ports:
       - "8080:8080"
     env_file:
       - .env
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
 volumes:
   mysql_data:
