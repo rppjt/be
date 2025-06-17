@@ -42,13 +42,16 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            cd /home/ubuntu/runrush
+            
+            # 최신 이미지 pull
             docker pull ${{ secrets.DOCKER_USERNAME }}/runrush-app:latest
-            cd /home/${{ secrets.USERNAME }}/runrush
             
             # .env 파일 생성 (GitHub Secrets에서)
             cat > .env << 'EOF'
             ${{ secrets.ENV_VARS }}
             EOF
             
-            docker-compose down
-            docker-compose up -d
+            # 기존 컨테이너 중지 및 새로 시작 (Docker Compose v2 명령어)
+            docker compose down
+            docker compose up -d
