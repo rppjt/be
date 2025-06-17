@@ -31,11 +31,18 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Check project structure
+        run: |
+          ls -la
+          find . -name "pom.xml" -type f
+
       - name: Run tests
         run: mvn test
+        working-directory: .  # pom.xml이 있는 디렉토리로 변경
 
       - name: Build application
         run: mvn clean package -DskipTests
+        working-directory: .  # pom.xml이 있는 디렉토리로 변경
 
       - name: Build Docker image
         run: docker build -t ${{ env.DOCKER_IMAGE_NAME }} .
