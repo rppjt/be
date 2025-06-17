@@ -42,14 +42,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            # 프로젝트 폴더가 없으면 clone, 있으면 pull
-            if [ ! -d "/home/ubuntu/runrush" ]; then
-              cd /home/ubuntu
-              git clone https://github.com/your-github-username/your-repo-name.git runrush
-            else
-              cd /home/ubuntu/runrush
-              git pull origin main
-            fi
+            # 기존 폴더 삭제 후 새로 clone
+            rm -rf /home/ubuntu/runrush
+            cd /home/ubuntu
+            git clone https://github.com/rppjt/be.git runrush
             
             cd /home/ubuntu/runrush
             
@@ -60,6 +56,9 @@ jobs:
             cat > .env << 'EOF'
             ${{ secrets.ENV_VARS }}
             EOF
+            
+            # 파일 확인
+            ls -la
             
             # 기존 컨테이너 중지 및 새로 시작
             docker compose down
