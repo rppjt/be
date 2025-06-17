@@ -48,8 +48,6 @@ jobs:
             
             # docker-compose.yml 파일 생성
             cat > docker-compose.yml << 'EOF'
-            version: '3.8'
-            
             services:
               db:
                 image: mysql:8.0
@@ -78,31 +76,55 @@ jobs:
               mysql_data:
             EOF
             
-            # 기존 서비스들 정리
-            docker compose down || true
+            # 기존 서비스들 완전 정리 (포트 충돌 방지)
+            docker-compose down || true
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
             
             # 최신 이미지 pull
-            docker compose pull app
+            docker-compose pull app
             
             # 서비스들 시작 (백그라운드에서)
-            docker compose up -d
+            docker-compose up -d
             
             # 배포 상태 확인
-            echo "Waiting for services to start..."
-            sleep 20
+            echo "🚀 Starting services..."
+            sleep 30
             
             # 서비스 상태 확인
-            docker compose ps
+            echo "📊 Container Status:"
+            docker-compose ps
+            
+            # MySQL 연결 대기
+            echo "⏳ Waiting for MySQL..."
+            for i in {1..20}; do
+              if docker exec db mysqladmin ping -h localhost -u root --password=1234 --silent 2>/dev/null; then
+                echo "✅ MySQL is ready!"
+                break
+              fi
+              echo "Waiting for MySQL... ($i/20)"
+              sleep 3
+            done
             
             # 애플리케이션 헬스체크
+            echo "⏳ Checking application health..."
             for i in {1..30}; do
               if curl -f http://localhost:8080/health-check 2>/dev/null; then
                 echo "✅ Application is healthy!"
+                echo "🌐 Access your app at: http://3.38.180.5:8080/health-check"
                 break
               fi
-              echo "⏳ Waiting for application... ($i/30)"
+              echo "Waiting for application... ($i/30)"
               sleep 10
             done
+            
+            # 최종 상태 확인
+            echo "📋 Final Status:"
+            docker ps
+            
+            # 애플리케이션 로그 (마지막 10줄)
+            echo "📜 Application Logs:"
+            docker logs spring-app --tail 10
             
             # 사용하지 않는 이미지 정리
             docker image prune -f
@@ -110,4 +132,5 @@ jobs:
             # 보안을 위해 환경변수 파일 삭제
             rm -f .env
             
-            echo "🚀 Deployment completed successfully!"
+            echo "🎉 Deployment completed successfully!"
+            echo "🔗 Health Check: http://3.38.180.5:8080/health-check"
