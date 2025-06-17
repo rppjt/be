@@ -52,13 +52,17 @@ jobs:
             # 최신 이미지 pull
             docker pull ${{ secrets.DOCKER_USERNAME }}/runrush-app:latest
             
-            # .env 파일 생성 (GitHub Secrets에서)
-            cat > .env << 'EOF'
+            # .env 파일 생성 (DOCKER_USERNAME 먼저, 그 다음 나머지)
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
+            cat >> .env << 'EOF'
             ${{ secrets.ENV_VARS }}
             EOF
             
             # 파일 확인
+            echo "=== 파일 목록 ==="
             ls -la
+            echo "=== .env 파일 처음 5줄 ==="
+            head -5 .env
             
             # 기존 컨테이너 중지 및 새로 시작
             docker compose down
