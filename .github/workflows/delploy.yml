@@ -46,19 +46,77 @@ jobs:
             # 환경변수 파일 생성
             echo "${{ secrets.ENV_FILE }}" > .env
             
-            # 기존 컨테이너 중지 및 제거
-            docker stop runrush-app || true
-            docker rm runrush-app || true
+            # docker-compose.yml 파일 생성
+            cat > docker-compose.yml << 'EOF'
+            version: '3.8'
             
-            # 최신 이미지 pull 및 실행
-            docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker run -d \
-              --name runrush-app \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              --env-file .env \
-              ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            services:
+              db:
+                image: mysql:8.0
+                container_name: db
+                environment:
+                  MYSQL_DATABASE: runrush_dev
+                  MYSQL_USER: root
+                  MYSQL_PASSWORD: ${DB_PASSWORD:-1234}
+                  MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234}
+                ports:
+                  - "3306:3306"
+                volumes:
+                  - mysql_data:/var/lib/mysql
+                healthcheck:
+                  test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${DB_PASSWORD:-1234}" ]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+                  start_period: 30s
+                restart: unless-stopped
+
+              app:
+                image: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+                container_name: spring-app
+                ports:
+                  - "8080:8080"
+                env_file:
+                  - .env
+                depends_on:
+                  db:
+                    condition: service_healthy
+                restart: unless-stopped
+
+            volumes:
+              mysql_data:
+            EOF
             
-            # 정리
+            # 기존 서비스들 정리
+            docker-compose down || true
+            
+            # 최신 이미지 pull
+            docker-compose pull app
+            
+            # 서비스들 시작 (백그라운드에서)
+            docker-compose up -d
+            
+            # 배포 상태 확인
+            echo "Waiting for services to start..."
+            sleep 20
+            
+            # 서비스 상태 확인
+            docker-compose ps
+            
+            # 애플리케이션 헬스체크
+            for i in {1..30}; do
+              if curl -f http://localhost:8080/health-check 2>/dev/null; then
+                echo "✅ Application is healthy!"
+                break
+              fi
+              echo "⏳ Waiting for application... ($i/30)"
+              sleep 10
+            done
+            
+            # 사용하지 않는 이미지 정리
             docker image prune -f
+            
+            # 보안을 위해 환경변수 파일 삭제
             rm -f .env
+            
+            echo "🚀 Deployment completed successfully!"
