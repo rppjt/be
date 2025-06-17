@@ -2,7 +2,7 @@ name: Build and Deploy to EC2 via Docker Hub
 
 on:
   push:
-    branches: [ main ]
+    branches: [ deploy ]
 
 jobs:
   build-and-deploy:
