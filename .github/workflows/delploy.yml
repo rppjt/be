@@ -54,8 +54,6 @@ jobs:
                 container_name: db
                 environment:
                   MYSQL_DATABASE: runrush_dev
-                  MYSQL_USER: root
-                  MYSQL_PASSWORD: ${DB_PASSWORD:-1234}
                   MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234}
                 ports:
                   - "3306:3306"
