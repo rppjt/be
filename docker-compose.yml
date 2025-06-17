@@ -12,7 +12,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   app:
-    image: dnsjxo0616/runrush-app:latest
+    image: ${DOCKER_USERNAME}/runrush-app:latest  # 환경변수 사용
     container_name: spring-app
     ports:
       - "8080:8080"
