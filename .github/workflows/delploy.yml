@@ -2,7 +2,7 @@ name: Build and Deploy to EC2 via Docker Hub
 
 on:
   push:
-    branches: [ deploy ]
+    branches: [ deploy ]  # main에서 deploy로 변경
 
 jobs:
   build-and-deploy:
@@ -45,7 +45,7 @@ jobs:
             # 기존 폴더 삭제 후 새로 clone
             rm -rf /home/ubuntu/runrush
             cd /home/ubuntu
-            git clone https://github.com/rppjt/be.git runrush
+            git clone -b deploy https://github.com/rppjt/be.git runrush
             
             cd /home/ubuntu/runrush
             
