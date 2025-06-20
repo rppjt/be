@@ -12,7 +12,7 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
-    restart: unless-stopped
+    restart: no
 
   app:
     image: dnjsxo0616/runrush-app:latest  # build 대신 image 사용
@@ -28,7 +28,7 @@ services:
     command: [ "java", "-Xmx300m", "-Xms300m", "-jar", "app.jar" ]
     networks:
       - app-network
-    restart: unless-stopped
+    restart: no
 
 volumes:
   mysql_data:
