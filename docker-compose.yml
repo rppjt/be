@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: dnjsxo0616/runrush-app:latest  # build 대신 image 사용
     container_name: spring-app
     depends_on:
       - mysql
@@ -23,7 +23,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
     env_file:
-      - .env
+      - runrush.env  # .env 대신 runrush.env
     networks:
       - app-network
     restart: unless-stopped
