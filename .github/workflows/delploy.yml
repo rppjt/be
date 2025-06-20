@@ -12,20 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew build -x test
 
       - name: Build Docker image
         run: |
@@ -36,9 +28,8 @@ jobs:
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push to DockerHub
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest
+      - name: Push image to DockerHub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest
 
       - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -49,13 +40,14 @@ jobs:
           source: "docker-compose.yml"
           target: "/home/ubuntu/app"
 
-      - name: Create .env file on EC2
+      - name: Create .env on EC2
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
             echo "${{ secrets.ENV_VARS }}" > .env
 
@@ -67,21 +59,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app
-            
-            # 기존 컨테이너 중지 및 제거
             docker-compose down || true
-            
-            # 최신 이미지 pull
             docker pull ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest
-            
-            # 새 컨테이너 시작
             docker-compose up -d
-            
-            # 사용하지 않는 이미지 정리
             docker system prune -f
-            
-            # 컨테이너 상태 확인
             docker-compose ps
-            
-            # 애플리케이션 로그 확인 (마지막 20줄)
             docker-compose logs --tail=20 app

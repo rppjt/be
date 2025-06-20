@@ -1,36 +1,34 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
     image: mysql:8.0
-    container_name: runrush-mysql
+    container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - runrush-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
+      timeout: 10s
+      retries: 5
 
   app:
-    image: ${DOCKER_USERNAME}/runrush-app:latest  # DockerHub에서 이미지 가져오기
+    image: ${DOCKER_USERNAME}/runrush-app:latest
     container_name: runrush-app
     restart: unless-stopped
     ports:
-      - "80:8080"  # 80 포트로 외부 접근
+      - "80:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
       JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
@@ -40,7 +38,9 @@ services:
       OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_REGION: ${AWS_REGION}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      KAKAO_MAP_REST_API_KEY: ${KAKAO_MAP_REST_API_KEY}
     depends_on:
       mysql:
         condition: service_healthy
@@ -49,8 +49,6 @@ services:
 
 volumes:
   mysql_data:
-    driver: local
 
 networks:
   runrush-network:
-    driver: bridge

@@ -10,24 +10,22 @@ spring:
       ddl-auto: update
     show-sql: true
     properties:
-      hibernate:
-        format_sql: true
+      hibernate.format_sql: true
 
   security:
     oauth2:
       client:
         registration:
           kakao:
-            client-name: Kakao
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_SECRET_KEY}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
             scope:
               - profile_nickname
               - profile_image
               - account_email
-            redirect-uri: ${KAKAO_REDIRECT_URI}
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
@@ -37,31 +35,17 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token:
-    expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
-  refresh-token:
-    expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
+  access-token.expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  refresh-token.expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
 
 app:
-  kakao:
-    map:
-      rest-api-key: ${KAKAO_MAP_REST_API_KEY}
-      base-url: https://dapi.kakao.com
-      reverse-geocoding-path: /v2/local/geo/coord2address.json
-  oauth2:
-    redirect-uri: ${OAUTH2_REDIRECT_URI}
+  kakao.map.rest-api-key: ${KAKAO_MAP_REST_API_KEY}
+  oauth2.redirect-uri: ${OAUTH2_REDIRECT_URI}
 
 cloud:
   aws:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ${AWS_REGION}
-    s3:
-      bucket: ${AWS_S3_BUCKET}
-
-logging:
-  level:
-    root: INFO
-    runrush.be: INFO
+    region.static: ${AWS_REGION}
+    s3.bucket: ${AWS_S3_BUCKET}
