@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ deploy ]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             # 기존 컨테이너 정리
-            docker-compose down || true
+            docker compose down || true
             docker system prune -f
             
             # 환경변수 파일 생성
@@ -58,7 +58,7 @@ jobs:
             
             # 최신 이미지 pull 및 실행
             docker pull ${{ secrets.DOCKER_USERNAME }}/runrush-app:latest
-            docker-compose up -d
+            docker compose up -d
             
             # 로그 확인
-            docker-compose logs -f --tail=50
+            docker compose logs --tail=50
