@@ -5,3 +5,7 @@ build
 *.md
 .idea
 target
+node_modules
+.vscode
+*.log
+.DS_Store

@@ -1,8 +1,7 @@
 # 1단계: 빌드
 FROM gradle:8.3-jdk17 AS builder
 WORKDIR /app
-COPY --chown=gradle:gradle . .
-USER gradle
+COPY . .
 RUN gradle bootJar --no-daemon
 
 # 2단계: 실행
