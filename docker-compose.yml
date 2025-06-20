@@ -24,6 +24,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
     env_file:
       - runrush.env  # .env 대신 runrush.env
+    command: [ "java", "-Xmx300m", "-Xms300m", "-jar", "app.jar" ]
     networks:
       - app-network
     restart: unless-stopped
