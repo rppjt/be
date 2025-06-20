@@ -1,54 +1,36 @@
-version: "3.8"
-
 services:
   mysql:
     image: mysql:8.0
     container_name: mysql
-    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - runrush-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - app-network
+    restart: unless-stopped
 
   app:
-    image: ${DOCKER_USERNAME}/runrush-app:latest
-    container_name: runrush-app
-    restart: unless-stopped
-    ports:
-      - "80:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
-      DB_USERNAME: root
-      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
-      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
-      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
-      KAKAO_SECRET_KEY: ${KAKAO_SECRET_KEY}
-      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
-      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
-      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      KAKAO_MAP_REST_API_KEY: ${KAKAO_MAP_REST_API_KEY}
+    build: .
+    container_name: spring-app
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    env_file:
+      - .env
     networks:
-      - runrush-network
+      - app-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
 
 networks:
-  runrush-network:
+  app-network:
+    driver: bridge
