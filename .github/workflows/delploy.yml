@@ -60,9 +60,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cat > ~/runrush.env << 'EOF'
-            ${{
-              secrets.ENV_VARS
-            }}
+            ${{ secrets.ENV_VARS }}
             EOF
 
       # ✅ 7. SSH로 EC2 접속해서 배포 실행
