@@ -13,6 +13,12 @@ services:
     networks:
       - app-network
     restart: no
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+      start_period: 60s
 
   app:
     image: dnjsxo0616/runrush-app:latest  # build 대신 image 사용
@@ -20,12 +26,12 @@ services:
     depends_on:
       - mysql
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
     env_file:
       - runrush.env  # .env 대신 runrush.env
-    command: [ "java", "-Xmx300m", "-Xms300m", "-jar", "app.jar" ]
+    command: [ "java", "-Xmx512m", "-Xms256m", "-jar", "app.jar" ]
     networks:
       - app-network
     restart: no
