@@ -1,25 +1,56 @@
+version: '3.8'
+
 services:
-  db:
+  mysql:
     image: mysql:8.0
-    container_name: db
+    container_name: runrush-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: runrush_dev
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - runrush-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
 
   app:
-    image: dnjsxo0616/runrush-app:latest
-    container_name: spring-app
+    image: ${DOCKER_USERNAME}/runrush-app:latest  # DockerHub에서 이미지 가져오기
+    container_name: runrush-app
+    restart: unless-stopped
     ports:
-      - "8080:8080"
-    env_file:
-      - .env
+      - "80:8080"  # 80 포트로 외부 접근
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_SECRET_KEY: ${KAKAO_SECRET_KEY}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
     depends_on:
-      - db
+      mysql:
+        condition: service_healthy
+    networks:
+      - runrush-network
 
 volumes:
   mysql_data:
+    driver: local
+
+networks:
+  runrush-network:
+    driver: bridge
