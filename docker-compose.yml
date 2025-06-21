@@ -20,7 +20,6 @@ services:
       interval: 10s  # 더 자주 체크
       start_period: 40s
 
-
   app:
     image: dnjsxo0616/runrush-app:latest  # build 대신 image 사용
     container_name: spring-app
