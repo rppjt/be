@@ -56,6 +56,14 @@ app:
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI}
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  show-actuator: false
+
 cloud:
   aws:
     credentials:
