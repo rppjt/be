@@ -1,5 +1,6 @@
 package runrush.be.recommendedCourse.dto;
 
+import runrush.be.common.util.RoundUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 public record RecommendedCourseMyListResponse(
@@ -19,7 +20,7 @@ public record RecommendedCourseMyListResponse(
                 course.getImageUrl(),
                 course.getDescription(),
                 course.getEndLocationName(),
-                course.getTotalDistance()
+                RoundUtil.round2(course.getTotalDistance())
         );
     }
 }

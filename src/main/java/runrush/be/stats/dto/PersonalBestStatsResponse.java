@@ -1,5 +1,7 @@
 package runrush.be.stats.dto;
 
+import runrush.be.common.util.RoundUtil;
+
 public record PersonalBestStatsResponse(
         double longestDistance,
         double fastestPace,
@@ -15,6 +17,23 @@ public record PersonalBestStatsResponse(
     ) {
     }
 
+    public static PersonalBestStatsResponse of(
+            double longestDistance,
+            double fastestPace,
+            long longestTime,
+            double totalDistance,
+            int totalRuns,
+            BestMonthRecord bestMonthRecord
+    ) {
+        return new PersonalBestStatsResponse(
+                RoundUtil.round2(longestDistance),
+                RoundUtil.round2(fastestPace),
+                longestTime,
+                RoundUtil.round2(totalDistance),
+                totalRuns,
+                bestMonthRecord
+        );
+    }
 
     public static PersonalBestStatsResponse empty() {
         return new PersonalBestStatsResponse(

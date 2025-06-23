@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import runrush.be.common.exception.BusinessException;
 import runrush.be.common.exception.ErrorCode;
+import runrush.be.common.util.RoundUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
@@ -151,7 +152,7 @@ public class RunningStatsService {
                 ))
                 .toList();
 
-        return new RecommendedCourseDetailStatsResponse(
+        return RecommendedCourseDetailStatsResponse.of(
                 courseId,
                 course.getTitle(),
                 course.getUser().getName(),
@@ -159,10 +160,10 @@ public class RunningStatsService {
                 totalCompletionCount,
                 uniqueRunnerCount,
                 averageCompletionTime,
-                Math.round(averagePace * 100.0) / 100.0,
+                averagePace,
                 myCompletionCount,
                 myBestTime,
-                myAveragePace != null ? Math.round(myAveragePace * 100.0) / 100.0 : null,
+                myAveragePace,
                 topRunners
         );
     }
@@ -195,14 +196,14 @@ public class RunningStatsService {
                             .average()
                             .orElse(0.0);
 
-                    return new PopularRecommendedCourseResponse(
+                    return PopularRecommendedCourseResponse.of(
                             course.getId(),
                             course.getTitle(),
                             course.getUser().getName(),
                             course.getTotalDistance() / 1000.0,
                             totalCompletionCount,
                             uniqueRunnerCount,
-                            Math.round(averagePace * 100.0) / 100.0
+                            averagePace
                     );
                 })
                 .sorted(Comparator.comparing(PopularRecommendedCourseResponse::totalCompletionCount).reversed())
@@ -231,16 +232,17 @@ public class RunningStatsService {
 
         return new BasicStats(
                 totalRuns,
-                Math.round(totalDistance * 100.0) / 100.0,
+                RoundUtil.round2(totalDistance),
                 totalTime,
-                Math.round(averagePace * 100.0) / 100.0,
-                Math.round(averageDistance * 100.0) / 100.0);
+                RoundUtil.round2(averagePace),
+                RoundUtil.round2(averageDistance)
+        );
     }
 
     private WeeklyStatsResponse calculateWeeklyStats(List<RunningRecord> records, LocalDate startOfWeek, LocalDate endOfWeek) {
         BasicStats basic = calculateBasicStats(records);
 
-        return new WeeklyStatsResponse(
+        return  WeeklyStatsResponse.of(
                 basic.totalRuns(),
                 basic.totalDistance(),
                 basic.totalTime(),
@@ -269,15 +271,15 @@ public class RunningStatsService {
                 .min()
                 .orElse(0.0);
 
-        return new MonthlyStatsResponse(
+        return MonthlyStatsResponse.of(
                 basic.totalRuns,
                 basic.totalDistance,
                 basic.totalTime,
                 basic.averagePace,
                 basic.averageDistance,
                 activeDays,
-                Math.round(longestRun * 100.0) / 100.0,
-                Math.round(fastestPace * 100.0) / 100.0,
+                longestRun,
+                fastestPace,
                 month,
                 year
         );
@@ -301,9 +303,9 @@ public class RunningStatsService {
 
         PersonalBestStatsResponse.BestMonthRecord bestMonthRecord = calculateBestMonthRecord(records);
 
-        return new PersonalBestStatsResponse(
-                Math.round(longestDistance * 100.0) / 100.0,
-                Math.round(fastestPace * 100.0) / 100.0,
+        return PersonalBestStatsResponse.of(
+                longestDistance,
+                fastestPace,
                 longestTime,
                 basic.totalDistance(),
                 basic.totalRuns(),

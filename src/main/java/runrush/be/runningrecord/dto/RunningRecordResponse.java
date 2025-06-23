@@ -2,6 +2,7 @@ package runrush.be.runningrecord.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import runrush.be.common.util.GeoJsonUtil;
+import runrush.be.common.util.RoundUtil;
 import runrush.be.runningrecord.domain.RunningRecord;
 
 import java.time.LocalDateTime;
@@ -26,9 +27,9 @@ public record RunningRecordResponse(
     public static RunningRecordResponse toRecordResponse(RunningRecord record, boolean isRegisteredAsCourse) {
         return new RunningRecordResponse(
                 record.getId(),
-                Math.round(record.getTotalDistance() * 100.0) / 100.0,
+                RoundUtil.round2(record.getTotalDistance()),
                 record.getTotalTime(),
-                Math.round(record.getPace() * 100.0) / 100.0,
+                RoundUtil.round2(record.getPace()),
                 record.getStartedTime(),
                 record.getEndedTime(),
                 record.getStartLatitude(),

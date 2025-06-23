@@ -2,6 +2,7 @@ package runrush.be.recommendedCourse.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import runrush.be.common.util.GeoJsonUtil;
+import runrush.be.common.util.RoundUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 public record RecommendedCourseResponse(
@@ -31,7 +32,7 @@ public record RecommendedCourseResponse(
                 course.getStartLocationName(),
                 course.getEndLocationName(),
                 GeoJsonUtil.parseGeoJson(course.getPathGeoJson()),
-                Math.round(course.getTotalDistance() * 100.0) / 100.0,
+                RoundUtil.round2(course.getTotalDistance()),
                 likeCount,
                 isLiked,
                 isBookmarked

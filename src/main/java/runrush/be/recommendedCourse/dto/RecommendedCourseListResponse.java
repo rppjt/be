@@ -1,5 +1,6 @@
 package runrush.be.recommendedCourse.dto;
 
+import runrush.be.common.util.RoundUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
 
 public record RecommendedCourseListResponse(
@@ -20,7 +21,7 @@ public record RecommendedCourseListResponse(
                 course.getImageUrl(),
                 course.getDescription(),
                 course.getEndLocationName(),
-                Math.round(course.getTotalDistance() * 100.0) / 100.0,
+                RoundUtil.round2(course.getTotalDistance()),
                 isBookmarked
         );
     }

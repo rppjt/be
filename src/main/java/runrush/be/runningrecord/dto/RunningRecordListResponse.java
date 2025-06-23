@@ -1,5 +1,6 @@
 package runrush.be.runningrecord.dto;
 
+import runrush.be.common.util.RoundUtil;
 import runrush.be.runningrecord.domain.RunningRecord;
 
 import java.time.LocalDateTime;
@@ -16,9 +17,9 @@ public record RunningRecordListResponse(
     public static RunningRecordListResponse toRecordListResponse(RunningRecord record) {
         return new RunningRecordListResponse(
                 record.getId(),
-                Math.round(record.getTotalDistance() * 100.0) / 100.0,
+                RoundUtil.round2(record.getTotalDistance()),
                 record.getTotalTime(),
-                Math.round(record.getPace() * 100.0) / 100.0,
+                RoundUtil.round2(record.getPace()),
                 record.getEndLocationName(),
                 record.getCreatedAt(),
                 RecommendedCourseInfo.from(record.getRecommendedCourse())
