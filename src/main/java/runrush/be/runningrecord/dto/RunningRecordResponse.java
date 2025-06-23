@@ -20,14 +20,15 @@ public record RunningRecordResponse(
         String startLocationName,
         String endLocationName,
         JsonNode pathGeoJson,
-        RecommendedCourseInfo recommendedCourse
+        RecommendedCourseInfo recommendedCourse,
+        boolean isRegisteredAsCourse
 ) {
-    public static RunningRecordResponse toRecordResponse(RunningRecord record) {
+    public static RunningRecordResponse toRecordResponse(RunningRecord record, boolean isRegisteredAsCourse) {
         return new RunningRecordResponse(
                 record.getId(),
-                record.getTotalDistance(),
+                Math.round(record.getTotalDistance() * 100.0) / 100.0,
                 record.getTotalTime(),
-                record.getPace(),
+                Math.round(record.getPace() * 100.0) / 100.0,
                 record.getStartedTime(),
                 record.getEndedTime(),
                 record.getStartLatitude(),
@@ -37,7 +38,8 @@ public record RunningRecordResponse(
                 record.getStartLocationName(),
                 record.getEndLocationName(),
                 GeoJsonUtil.parseGeoJson(record.getPathGeoJson()),
-                RecommendedCourseInfo.from(record.getRecommendedCourse())
+                RecommendedCourseInfo.from(record.getRecommendedCourse()),
+                isRegisteredAsCourse
         );
     }
 }

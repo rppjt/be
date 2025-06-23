@@ -224,5 +224,6 @@ application.properties
 .env
 application.yml
 
+CLAUDE.md
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,windows,macos,visualstudiocode,intellij+all

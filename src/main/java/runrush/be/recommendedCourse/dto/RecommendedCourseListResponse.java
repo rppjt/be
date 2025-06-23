@@ -20,7 +20,7 @@ public record RecommendedCourseListResponse(
                 course.getImageUrl(),
                 course.getDescription(),
                 course.getEndLocationName(),
-                course.getTotalDistance(),
+                Math.round(course.getTotalDistance() * 100.0) / 100.0,
                 isBookmarked
         );
     }

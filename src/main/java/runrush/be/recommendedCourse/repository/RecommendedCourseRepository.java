@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface RecommendedCourseRepository extends JpaRepository<RecommendedCourse, Long> {
     boolean existsBySourceRecordId(Long sourceRecordId);
+    
+    boolean existsBySourceRecordIdAndIsDeletedFalse(Long sourceRecordId);
 
     @Query("SELECT rc FROM RecommendedCourse rc " +
             "JOIN FETCH rc.user " +
