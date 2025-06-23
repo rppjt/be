@@ -105,7 +105,9 @@ public class RunningRecordService {
             throw new BusinessException(ErrorCode.RUNNING_RECORD_ACCESS_DENIED);
         }
 
-        return RunningRecordResponse.toRecordResponse(runningRecord);
+        boolean isRegisteredAsCourse = recommendedCourseRepository.existsBySourceRecordIdAndIsDeletedFalse(recordId);
+
+        return RunningRecordResponse.toRecordResponse(runningRecord, isRegisteredAsCourse);
     }
 
     @Transactional(readOnly = true)
