@@ -1,5 +1,9 @@
 package runrush.be.auth.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +24,7 @@ import runrush.be.common.exception.ErrorCode;
 import java.time.Instant;
 import java.util.Map;
 
+@Tag(name = "Authentication", description = "인증 관리 API")
 @Slf4j
 @RestController
 @RequestMapping("/auth")
@@ -29,10 +34,13 @@ public class AuthController {
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
 
+    @Operation(summary = "로그아웃", description = "사용자 로그아웃을 처리합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(
-                                         HttpServletRequest request,
-                                         HttpServletResponse response) {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = request.getHeader("Authorization");
 
         authService.logout(accessToken, response);
@@ -40,6 +48,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "액세스 토큰 재발급", description = "리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @ApiResponse(responseCode = "401", description = "리프레시 토큰 만료 또는 유효하지 않음")
+    })
     @PostMapping("/refresh")
     public ResponseEntity<?> reissue(HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookie(request);
@@ -51,6 +64,11 @@ public class AuthController {
         ));
     }
 
+    @Operation(summary = "액세스 토큰 발급", description = "리프레시 토큰을 사용하여 액세스 토큰을 발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "토큰 발급 성공"),
+            @ApiResponse(responseCode = "401", description = "리프레시 토큰 만료 또는 유효하지 않음")
+    })
     @GetMapping("/token")
     public ResponseEntity<?> getAccessToken(HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookie(request);
@@ -73,9 +91,9 @@ public class AuthController {
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if(cookies != null) {
-            for( Cookie cookie : cookies ) {
-                if(cookie.getName().equals("refresh_token")) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh_token")) {
                     return cookie.getValue();
                 }
             }
