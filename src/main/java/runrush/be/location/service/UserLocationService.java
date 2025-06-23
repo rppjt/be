@@ -27,7 +27,7 @@ public class UserLocationService {
 
     @Transactional
     public LocationSharingResponse setLocationSharing(Long userId, Boolean isSharing) {
-        Optional<UserLocation> existingLocation = userLocationRepository.findById(userId);
+        Optional<UserLocation> existingLocation = userLocationRepository.findByUserId(userId);
 
         if (existingLocation.isPresent()) {
             UserLocation userLocation = existingLocation.get();
@@ -47,7 +47,7 @@ public class UserLocationService {
 
     @Transactional
     public void updateLocation(Long userId, LocationUpdateRequest request) {
-        Optional<UserLocation> existingLocation = userLocationRepository.findById(userId);
+        Optional<UserLocation> existingLocation = userLocationRepository.findByUserId(userId);
 
         if (existingLocation.isPresent()) {
             UserLocation userLocation = existingLocation.get();
@@ -75,7 +75,7 @@ public class UserLocationService {
 
     @Transactional(readOnly = true)
     public List<NearbyFriendResponse> getNearbyFriends(Long userId, Double radiusKm) {
-        Optional<UserLocation> userLocationOpt = userLocationRepository.findById(userId);
+        Optional<UserLocation> userLocationOpt = userLocationRepository.findByUserId(userId);
         if (userLocationOpt.isEmpty()) {
             log.debug("사용자 {} 위치 정보 없음, 빈 친구 목록 반환", userId);
             return List.of();
@@ -106,7 +106,7 @@ public class UserLocationService {
                             location.getUser().getProfileImage(),
                             location.getLatitude(),
                             location.getLongitude(),
-                            distance
+                            Math.round(distance * 100.0) / 100.0
                     );
                 })
                 .filter(friend -> friend.distance() <= radiusKm)
@@ -117,7 +117,7 @@ public class UserLocationService {
 
     @Transactional(readOnly = true)
     public LocationSharingResponse getLocationSharingStatus(Long userId) {
-        Optional<UserLocation> userLocation = userLocationRepository.findById(userId);
+        Optional<UserLocation> userLocation = userLocationRepository.findByUserId(userId);
 
         if (userLocation.isPresent()) {
             Boolean currentStatus = userLocation.get().getIsSharing();

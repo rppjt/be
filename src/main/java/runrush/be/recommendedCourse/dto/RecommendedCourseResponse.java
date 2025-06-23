@@ -31,7 +31,7 @@ public record RecommendedCourseResponse(
                 course.getStartLocationName(),
                 course.getEndLocationName(),
                 GeoJsonUtil.parseGeoJson(course.getPathGeoJson()),
-                course.getTotalDistance(),
+                Math.round(course.getTotalDistance() * 100.0) / 100.0,
                 likeCount,
                 isLiked,
                 isBookmarked

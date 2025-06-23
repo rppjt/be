@@ -16,9 +16,9 @@ public record RunningRecordListResponse(
     public static RunningRecordListResponse toRecordListResponse(RunningRecord record) {
         return new RunningRecordListResponse(
                 record.getId(),
-                record.getTotalDistance(),
+                Math.round(record.getTotalDistance() * 100.0) / 100.0,
                 record.getTotalTime(),
-                record.getPace(),
+                Math.round(record.getPace() * 100.0) / 100.0,
                 record.getEndLocationName(),
                 record.getCreatedAt(),
                 RecommendedCourseInfo.from(record.getRecommendedCourse())
