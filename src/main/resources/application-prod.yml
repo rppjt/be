@@ -55,6 +55,9 @@ app:
       reverse-geocoding-path: /v2/local/geo/coord2address.json
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI}
+  cookie:
+    secure: ${COOKIE_SECURE:false}
+    same-site: ${COOKIE_SAME_SITE:Lax}
 
 springdoc:
   api-docs:

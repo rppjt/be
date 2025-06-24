@@ -3,6 +3,8 @@ package runrush.be.auth.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import runrush.be.auth.jwt.JwtTokenProvider;
 import runrush.be.common.exception.BusinessException;
@@ -15,6 +17,12 @@ import java.time.Instant;
 public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtTokenProvider jwtTokenProvider;
+    
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+    
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
 
     public void logout(String accessToken, HttpServletResponse response) {
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
@@ -49,12 +57,15 @@ public class AuthService {
 
         refreshTokenService.renewRefreshToken(email, refreshToken, jwtExpiration);
 
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false); // 로컬
-        refreshTokenCookie.setMaxAge((int) secondsUntilExpiration);
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(secondsUntilExpiration)
+                .sameSite(cookieSameSite)
+                .build();
+
+        response.setHeader("Set-Cookie", cookie.toString());
     }
 
     public String generateAccessToken(String email) {
