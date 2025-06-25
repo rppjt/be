@@ -89,10 +89,10 @@ public class RunningStatsService {
     }
 
     /**
-     * 특정 추천 코스의 상세 통계 조회
+     * 추천 코스의 상세 통계 조회
      */
     @Transactional(readOnly = true)
-    public RecommendedCourseDetailStatsResponse getRecommendedCourseDetailStats(Long courseId, Long userId) {
+    public RecommendedCourseDetailStats getRecommendedCourseDetailStats(Long courseId, Long userId) {
         RecommendedCourse course = recommendedCourseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
 
@@ -135,7 +135,7 @@ public class RunningStatsService {
         if (Double.isNaN(myAveragePace)) myAveragePace = null;
 
         // 상위 러너 TOP 5 계산
-        List<CourseTopRunnerResponse> topRunners = courseRecords.stream()
+        List<CourseTopRunner> topRunners = courseRecords.stream()
                 .collect(Collectors.groupingBy(
                         record -> record.getUser().getName(),
                         Collectors.minBy(Comparator.comparing(RunningRecord::getTotalTime))
@@ -145,14 +145,14 @@ public class RunningStatsService {
                 .map(Optional::get)
                 .sorted(Comparator.comparing(RunningRecord::getTotalTime))
                 .limit(5)
-                .map(record -> new CourseTopRunnerResponse(
+                .map(record -> new CourseTopRunner(
                         record.getUser().getName(),
                         record.getTotalTime(),
                         record.getPace()
                 ))
                 .toList();
 
-        return RecommendedCourseDetailStatsResponse.of(
+        return RecommendedCourseDetailStats.of(
                 courseId,
                 course.getTitle(),
                 course.getUser().getName(),
