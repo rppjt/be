@@ -16,6 +16,8 @@ import runrush.be.recommendedCourse.enums.SortType;
 import runrush.be.recommendedCourse.repository.RecommendedCourseRepository;
 import runrush.be.runningrecord.domain.RunningRecord;
 import runrush.be.runningrecord.service.RunningRecordService;
+import runrush.be.stats.dto.RecommendedCourseDetailStats;
+import runrush.be.stats.service.RunningStatsService;
 
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class RecommendedCourseService {
     private final RunningRecordService runningRecordService;
     private final CourseBookmarkRepository courseBookmarkRepository;
     private final CourseLikeRepository courseLikeRepository;
+    private final RunningStatsService runningStatsService;
 
     @Transactional
     public void createRecommendedCourse(Long recordId, Long userId, String name) {
@@ -93,6 +96,34 @@ public class RecommendedCourseService {
         boolean isBookmarked = courseBookmarkRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
 
         return RecommendedCourseResponse.toCourseResponse(recommendedCourse, likeCount, isLiked, isBookmarked);
+    }
+
+    @Transactional(readOnly = true)
+    public RecommendedCourseResponse getRecommendedCourseDetailWithStats(Long courseId, Long userId) {
+        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
+
+        long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
+        boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
+        boolean isBookmarked = courseBookmarkRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
+
+        RecommendedCourseDetailStats stats =
+                runningStatsService.getRecommendedCourseDetailStats(courseId, userId);
+
+        return RecommendedCourseResponse.toCourseResponse(
+                recommendedCourse,
+                likeCount,
+                isLiked,
+                isBookmarked,
+                stats.totalCompletionCount(),
+                stats.uniqueRunnerCount(),
+                stats.averageCompletionTimeSeconds(),
+                stats.averagePace(),
+                stats.myCompletionCount(),
+                stats.myBestTimeSeconds(),
+                stats.myAveragePace(),
+                stats.topRunners()
+        );
     }
 
     @Transactional(readOnly = true)
