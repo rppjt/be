@@ -4,7 +4,7 @@ import runrush.be.common.util.RoundUtil;
 
 import java.util.List;
 
-public record RecommendedCourseDetailStatsResponse(
+public record RecommendedCourseDetailStats(
         Long courseId,
         String courseTitle,
         String creatorName,
@@ -20,9 +20,9 @@ public record RecommendedCourseDetailStatsResponse(
         Double myAveragePace,
 
 
-        List<CourseTopRunnerResponse> topRunners
+        List<CourseTopRunner> topRunners
 ) {
-    public static RecommendedCourseDetailStatsResponse of(
+    public static RecommendedCourseDetailStats of(
             Long courseId,
             String courseTitle,
             String creatorName,
@@ -34,9 +34,9 @@ public record RecommendedCourseDetailStatsResponse(
             int myCompletionCount,
             Double myBestTimeSeconds,
             Double myAveragePace,
-            List<CourseTopRunnerResponse> topRunners
+            List<CourseTopRunner> topRunners
     ) {
-        return new RecommendedCourseDetailStatsResponse(
+        return new RecommendedCourseDetailStats(
                 courseId,
                 courseTitle,
                 creatorName,

@@ -2,17 +2,17 @@ package runrush.be.stats.dto;
 
 import runrush.be.common.util.RoundUtil;
 
-public record CourseTopRunnerResponse(
+public record CourseTopRunner(
         String runnerName,
         long bestCompletionTimeSeconds,
         double bestPace
 ) {
-    public static CourseTopRunnerResponse of(
+    public static CourseTopRunner of(
             String runnerName,
             long bestCompletionTimeSeconds,
             double bestPace
     ) {
-        return new CourseTopRunnerResponse(
+        return new CourseTopRunner(
                 runnerName,
                 bestCompletionTimeSeconds,
                 RoundUtil.round2(bestPace)
