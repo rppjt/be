@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import runrush.be.common.util.GeoJsonUtil;
 import runrush.be.common.util.RoundUtil;
 import runrush.be.recommendedCourse.domain.RecommendedCourse;
+import runrush.be.stats.dto.CourseTopRunner;
+
+import java.util.List;
 
 public record RecommendedCourseResponse(
         Long id,
@@ -17,12 +20,29 @@ public record RecommendedCourseResponse(
         double totalDistance,
         long likeCount,
         boolean isLiked,
-        boolean isBookmarked
+        boolean isBookmarked,
+
+        int totalCompletionCount,
+        int uniqueRunnerCount,
+        double averageCompletionTime,
+        double averagePace,
+        int myCompletionCount,
+        Double myBestTime,
+        Double myAveragePace,
+        List<CourseTopRunner> topRunners
 ) {
     public static RecommendedCourseResponse toCourseResponse(RecommendedCourse course,
                                                              long likeCount,
                                                              boolean isLiked,
-                                                             boolean isBookmarked) {
+                                                             boolean isBookmarked,
+                                                             int totalCompletionCount,
+                                                             int uniqueRunnerCount,
+                                                             double averageCompletionTime,
+                                                             double averagePace,
+                                                             int myCompletionCount,
+                                                             Double myBestTime,
+                                                             Double myAveragePace,
+                                                             List<CourseTopRunner> topRunners) {
         return new RecommendedCourseResponse(
                 course.getId(),
                 course.getUser().getId(),
@@ -35,7 +55,24 @@ public record RecommendedCourseResponse(
                 RoundUtil.round2(course.getTotalDistance()),
                 likeCount,
                 isLiked,
-                isBookmarked
+                isBookmarked,
+                totalCompletionCount,
+                uniqueRunnerCount,
+                averageCompletionTime,
+                averagePace,
+                myCompletionCount,
+                myBestTime,
+                myAveragePace,
+                topRunners
         );
+    }
+
+    // 기존 호환성을 위한 오버로드 메소드
+    public static RecommendedCourseResponse toCourseResponse(RecommendedCourse course,
+                                                             long likeCount,
+                                                             boolean isLiked,
+                                                             boolean isBookmarked) {
+        return toCourseResponse(course, likeCount, isLiked, isBookmarked,
+                0, 0, 0.0, 0.0, 0, null, null, List.of());
     }
 }
