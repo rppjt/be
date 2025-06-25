@@ -63,20 +63,6 @@ public class RunningStatsController {
         return ResponseEntity.ok(stats);
     }
 
-    @Operation(summary = "추천 코스 상세 통계 조회", description = "특정 추천 코스의 상세 통계를 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "추천 코스 상세 통계 조회 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패"),
-            @ApiResponse(responseCode = "404", description = "추천 코스를 찾을 수 없음")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/recommended-course/{courseId}")
-    public ResponseEntity<RecommendedCourseDetailStatsResponse> getRecommendedCourseDetailStats(
-            @Parameter(description = "추천 코스 ID") @PathVariable Long courseId,
-            @AuthenticationPrincipal UserPrincipal user) {
-        RecommendedCourseDetailStatsResponse stats = runningStatsService.getRecommendedCourseDetailStats(courseId, user.getId());
-        return ResponseEntity.ok(stats);
-    }
 
     @Operation(summary = "인기 추천 코스 TOP 10 조회", description = "가장 인기 있는 추천 코스 TOP 10을 조회합니다.")
     @ApiResponses(value = {
