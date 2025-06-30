@@ -18,10 +18,10 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtTokenProvider jwtTokenProvider;
     
-    @Value("${COOKIE_SECURE:false}")
+    @Value("${COOKIE_SECURE}")
     private boolean cookieSecure;
     
-    @Value("${COOKIE_SAME_SITE:Lax}")
+    @Value("${COOKIE_SAME_SITE}")
     private String cookieSameSite;
 
     public void logout(String accessToken, HttpServletResponse response) {
