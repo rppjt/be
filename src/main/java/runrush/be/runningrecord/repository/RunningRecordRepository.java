@@ -17,7 +17,13 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
             "WHERE rr.id = :id AND rr.isDeleted = false")
     Optional<RunningRecord> findByIdAndIsDeletedFalse(@Param("id") Long id);
 
-    List<RunningRecord> findByUserIdAndIsDeletedFalse(Long userId);
+    @Query("SELECT rr FROM RunningRecord rr " +
+            "JOIN FETCH rr.user " +
+            "LEFT JOIN FETCH rr.recommendedCourse rc " +
+            "LEFT JOIN FETCH rc.user " +
+            "WHERE rr.user.id = :userId AND rr.isDeleted = false " +
+            "ORDER BY rr.startedTime DESC")
+    List<RunningRecord> findByUserIdAndIsDeletedFalse(@Param("userId") Long userId);
 
     @Query("SELECT rr FROM RunningRecord rr " +
             "WHERE rr.user.id = :userId " +
