@@ -15,10 +15,11 @@ public interface CourseBookmarkRepository extends JpaRepository<CourseBookmark, 
     Optional<CourseBookmark> findByUserIdAndRecommendedCourseId(Long userId, Long courseId);
 
     @Query("SELECT cb FROM CourseBookmark cb " +
-            "JOIN FETCH cb.recommendedCourse " +
+            "JOIN FETCH cb.recommendedCourse rc " +
+            "JOIN FETCH rc.user " +
             "WHERE cb.user.id = :userId " +
             "ORDER BY cb.bookmarkedAt DESC")
-    List<CourseBookmark> findWithCourseByUserId(Long userId);
+    List<CourseBookmark> findWithCourseByUserId(@Param("userId") Long userId);
 
     @Modifying
     @Query("DELETE FROM CourseBookmark cb WHERE cb.recommendedCourse.id = :courseId")
