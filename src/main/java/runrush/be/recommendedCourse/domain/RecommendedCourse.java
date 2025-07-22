@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 import runrush.be.user.domain.User;
 
 import java.time.LocalDateTime;
@@ -98,5 +100,21 @@ public class RecommendedCourse {
 
     public boolean isDeleted() {
         return isDeleted;
+    }
+    
+    /**
+     * 사용자가 이 추천 코스에 대한 권한이 있는지 확인합니다.
+     */
+    public void validateOwnership(Long userId) {
+        if (!this.user.getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
+        }
+    }
+    
+    /**
+     * 사용자가 이 추천 코스의 소유자인지 확인합니다.
+     */
+    public boolean isOwnedBy(Long userId) {
+        return this.user.getId().equals(userId);
     }
 }
