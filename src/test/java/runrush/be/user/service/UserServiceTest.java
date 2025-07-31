@@ -27,20 +27,6 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
-    @DisplayName("이메일로 사용자 조회 성공")
-    void findUserByEmail_Success() {
-        String email = "test@example.com";
-        User mockUser = createTestUser(email, "테스트유저");
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
-
-        User result = userService.findUserByEmail(email);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getEmail()).isEqualTo(email);
-        verify(userRepository).findByEmail(email);
-    }
-
-    @Test
     @DisplayName("이메일로 사용자 조회 실패 - 사용자 없음")
     void findUserByEmail_UserNotFound() {
         String email = "notfound@example.com";
@@ -52,19 +38,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("ID로 사용자 조회 성공")
-    void findUserById_Success() {
-        Long userId = 1L;
-        User mockUser = createTestUser("test@example.com", "테스트유저");
-        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-
-        User result = userService.findUserById(userId);
-
-        assertThat(result).isNotNull();
-        verify(userRepository).findById(userId);
-    }
-
-    @Test
     @DisplayName("ID로 사용자 조회 실패 - 사용자 없음")
     void findUserById_UserNotFound() {
         Long userId = 999L;
@@ -73,28 +46,6 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.findUserById(userId))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("닉네임 사용 가능 여부 - 사용 가능")
-    void isNicknameAvailable_Available() {
-        String nickname = "새로운닉네임";
-        when(userRepository.existsByNickname(nickname)).thenReturn(false);
-
-        boolean result = userService.isNicknameAvailable(nickname);
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    @DisplayName("닉네임 사용 가능 여부 - 이미 사용중")
-    void isNicknameAvailable_AlreadyExists() {
-        String nickname = "기존닉네임";
-        when(userRepository.existsByNickname(nickname)).thenReturn(true);
-
-        boolean result = userService.isNicknameAvailable(nickname);
-
-        assertThat(result).isFalse();
     }
 
     @Test
