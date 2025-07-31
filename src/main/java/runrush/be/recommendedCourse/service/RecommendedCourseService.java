@@ -57,12 +57,8 @@ public class RecommendedCourseService {
 
     @Transactional
     public void updateRecommendedCourse(Long courseId, Long userId, RecommendedCourseUpdateRequest request) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
-
-        if (!recommendedCourse.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
-        }
+        RecommendedCourse recommendedCourse = findRecommendedCourseById(courseId);
+        recommendedCourse.validateOwnership(userId);
 
         if (request.title() != null && !request.title().isBlank()) {
             recommendedCourse.changeTitle(request.title());
@@ -75,24 +71,18 @@ public class RecommendedCourseService {
 
     @Transactional
     public void deleteRecommendedCourse(Long courseId, Long userId) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
-
-        if (!recommendedCourse.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.RECOMMENDED_COURSE_ACCESS_DENIED);
-        }
-
+        RecommendedCourse recommendedCourse = findRecommendedCourseById(courseId);
+        recommendedCourse.validateOwnership(userId);
+        
         recommendedCourse.courseDelete();
     }
 
     @Transactional(readOnly = true)
     public RecommendedCourseResponse getRecommendedCourseDetail(Long courseId, Long userId) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
-
+        RecommendedCourse recommendedCourse = findRecommendedCourseByCourseId(courseId);
+        
         long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
         boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
-
         boolean isBookmarked = courseBookmarkRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
 
         return RecommendedCourseResponse.toCourseResponse(recommendedCourse, likeCount, isLiked, isBookmarked);
@@ -100,9 +90,8 @@ public class RecommendedCourseService {
 
     @Transactional(readOnly = true)
     public RecommendedCourseResponse getRecommendedCourseDetailWithStats(Long courseId, Long userId) {
-        RecommendedCourse recommendedCourse = recommendedCourseRepository.findByCourseId(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
-
+        RecommendedCourse recommendedCourse = findRecommendedCourseByCourseId(courseId);
+        
         long likeCount = courseLikeRepository.countByRecommendedCourseId(courseId);
         boolean isLiked = courseLikeRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
         boolean isBookmarked = courseBookmarkRepository.existsByUserIdAndRecommendedCourseId(userId, courseId);
@@ -149,5 +138,15 @@ public class RecommendedCourseService {
                     return RecommendedCourseListResponse.toCourseListResponse(course, isBookmarked);
                 })
                 .toList();
+    }
+
+    private RecommendedCourse findRecommendedCourseById(Long courseId) {
+        return recommendedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
+    }
+    
+    private RecommendedCourse findRecommendedCourseByCourseId(Long courseId) {
+        return recommendedCourseRepository.findByCourseId(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RECOMMENDED_COURSE_NOT_FOUND));
     }
 }
