@@ -173,40 +173,8 @@ public class RunningStatsService {
      */
     @Transactional(readOnly = true)
     public List<PopularRecommendedCourseResponse> getPopularRecommendedCourses() {
-        List<RunningRecord> allRecords = runningRecordRepository.findAllRecommendedCourseRecords();
-        List<RecommendedCourse> allCourses = recommendedCourseRepository.findAllWithUser();
-
-        Map<Long, List<RunningRecord>> recordsByCourse = allRecords.stream()
-                .filter(record -> record.getRecommendedCourse() != null)
-                .filter(record -> !record.getRecommendedCourse().isDeleted())
-                .collect(Collectors.groupingBy(record -> record.getRecommendedCourse().getId()));
-
-        return allCourses.stream()
-                .map(course -> {
-                    List<RunningRecord> courseRecords = recordsByCourse.getOrDefault(course.getId(), List.of());
-
-                    int totalCompletionCount = courseRecords.size();
-                    int uniqueRunnerCount = (int) courseRecords.stream()
-                            .map(record -> record.getUser().getId())
-                            .distinct()
-                            .count();
-
-                    double averagePace = courseRecords.stream()
-                            .mapToDouble(RunningRecord::getPace)
-                            .average()
-                            .orElse(0.0);
-
-                    return PopularRecommendedCourseResponse.of(
-                            course.getId(),
-                            course.getTitle(),
-                            course.getUser().getName(),
-                            course.getTotalDistance() / 1000.0,
-                            totalCompletionCount,
-                            uniqueRunnerCount,
-                            averagePace
-                    );
-                })
-                .sorted(Comparator.comparing(PopularRecommendedCourseResponse::totalCompletionCount).reversed())
+        return runningRecordRepository.findPopularRecommendedCourseStats()
+                .stream()
                 .limit(10)
                 .toList();
     }
