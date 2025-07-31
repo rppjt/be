@@ -68,6 +68,7 @@ public class RunningStatsController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "인기 추천 코스 조회 성공")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/popular-courses")
     public ResponseEntity<List<PopularRecommendedCourseResponse>> getPopularRecommendedCourses() {
         List<PopularRecommendedCourseResponse> stats = runningStatsService.getPopularRecommendedCourses();
