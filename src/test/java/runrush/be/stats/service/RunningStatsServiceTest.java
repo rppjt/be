@@ -132,9 +132,7 @@ class RunningStatsServiceTest {
     @Test
     @DisplayName("인기 추천 코스 목록 조회 - 빈 데이터")
     void getPopularRecommendedCourses_EmptyData() {
-        when(runningRecordRepository.findAllRecommendedCourseRecords())
-                .thenReturn(List.of());
-        when(recommendedCourseRepository.findAllWithUser())
+        when(runningRecordRepository.findPopularRecommendedCourseStats())
                 .thenReturn(List.of());
 
         List<PopularRecommendedCourseResponse> result = runningStatsService.getPopularRecommendedCourses();
@@ -324,19 +322,12 @@ class RunningStatsServiceTest {
     @Test
     @DisplayName("인기 추천 코스 목록 조회 - 실제 데이터")
     void getPopularRecommendedCourses_WithData() {
-        List<RunningRecord> allRecords = List.of(
-            createTestRunningRecordWithRecommendedCourse(1L, 1L), // 코스 1에 2번 완주
-            createTestRunningRecordWithRecommendedCourse(2L, 1L),
-            createTestRunningRecordWithRecommendedCourse(3L, 2L)  // 코스 2에 1번 완주
+        List<PopularRecommendedCourseResponse> mockResponses = List.of(
+            new PopularRecommendedCourseResponse(1L, "코스 1", "사용자 1", 5.0, 2, 1, 8.0),
+            new PopularRecommendedCourseResponse(2L, "코스 2", "사용자 2", 3.0, 1, 1, 9.0)
         );
         
-        List<RecommendedCourse> allCourses = List.of(
-            createTestRecommendedCourseWithId(1L),
-            createTestRecommendedCourseWithId(2L)
-        );
-        
-        when(runningRecordRepository.findAllRecommendedCourseRecords()).thenReturn(allRecords);
-        when(recommendedCourseRepository.findAllWithUser()).thenReturn(allCourses);
+        when(runningRecordRepository.findPopularRecommendedCourseStats()).thenReturn(mockResponses);
 
         List<PopularRecommendedCourseResponse> result = runningStatsService.getPopularRecommendedCourses();
 
