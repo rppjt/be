@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import runrush.be.runningrecord.domain.RunningRecord;
+import runrush.be.stats.dto.PopularRecommendedCourseResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,4 +72,21 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
             "AND (rc IS NULL OR rc.isDeleted = false) " +
             "ORDER BY rr.recommendedCourse.id")
     List<RunningRecord> findAllRecommendedCourseRecords();
+
+    @Query("SELECT new runrush.be.stats.dto.PopularRecommendedCourseResponse(" +
+            "rc.id, " +
+            "rc.title, " +
+            "rc.user.name, " +
+            "rc.totalDistance / 1000.0, " +
+            "CAST(COUNT(rr.id) AS int), " +
+            "CAST(COUNT(DISTINCT rr.user.id) AS int), " +
+            "COALESCE(AVG(rr.pace), 0.0)" +
+            ") " +
+            "FROM RunningRecord rr " +
+            "JOIN rr.recommendedCourse rc " +
+            "JOIN rc.user " +
+            "WHERE rr.isDeleted = false AND rc.isDeleted = false " +
+            "GROUP BY rc.id, rc.title, rc.user.name, rc.totalDistance " +
+            "ORDER BY COUNT(rr.id) DESC")
+    List<PopularRecommendedCourseResponse> findPopularRecommendedCourseStats();
 }
