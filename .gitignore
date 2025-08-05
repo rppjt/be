@@ -223,6 +223,7 @@ gradle-app.setting
 application.properties
 .env
 application.yml
+docker-compose-local.yml
 
 CLAUDE.md
 
