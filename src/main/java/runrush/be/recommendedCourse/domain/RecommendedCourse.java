@@ -16,7 +16,10 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "recommended_course")
+@Table(name = "recommended_course", indexes = {
+    @Index(name = "idx_user_is_deleted", columnList = "user_id, is_deleted"),
+    @Index(name = "idx_is_deleted_created_at", columnList = "is_deleted, created_at")
+})
 public class RecommendedCourse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
