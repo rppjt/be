@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "user_location")
+@Table(name = "user_location", indexes = {
+    @Index(name = "idx_sharing_updated", columnList = "is_sharing, updated_at")
+})
 public class UserLocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

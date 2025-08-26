@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "course_bookmark")
+@Table(name = "course_bookmark", indexes = {
+    @Index(name = "idx_course_bookmark_user_course", columnList = "user_id, recommended_course_id")
+})
 public class CourseBookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

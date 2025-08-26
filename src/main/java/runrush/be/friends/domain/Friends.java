@@ -9,7 +9,10 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "friends")
+@Table(name = "friends", indexes = {
+    @Index(name = "idx_friends_requester_status", columnList = "requester_id, friend_status"),
+    @Index(name = "idx_friends_target_status", columnList = "target_id, friend_status")
+})
 public class Friends {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

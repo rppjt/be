@@ -15,7 +15,10 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "running_record")
+@Table(name = "running_record", indexes = {
+    @Index(name = "idx_user_id_is_deleted", columnList = "user_id, is_deleted"),
+    @Index(name = "idx_user_id_started_time", columnList = "user_id, started_time")
+})
 public class RunningRecord {
 
     @Id
