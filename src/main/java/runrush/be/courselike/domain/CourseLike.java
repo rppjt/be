@@ -10,7 +10,9 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "course_like")
+@Table(name = "course_like", indexes = {
+    @Index(name = "idx_course_like_user_course", columnList = "user_id, recommended_course_id")
+})
 public class CourseLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
