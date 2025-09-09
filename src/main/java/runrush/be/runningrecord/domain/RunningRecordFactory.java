@@ -55,6 +55,7 @@ public class RunningRecordFactory {
                 .endedTime(request.endedTime())
                 .totalTime(totalTime)
                 .pace(pace)
+                .idempotencyKey(request.idempotencyKey())
                 .build();
     }
 }
