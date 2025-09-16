@@ -10,6 +10,7 @@ public record RunningRecordRequest(
         double endLongitude,
         LocalDateTime startedTime,
         LocalDateTime endedTime,
-        Long recommendedCourseId
+        Long recommendedCourseId,
+        String idempotencyKey
 ) {
 }

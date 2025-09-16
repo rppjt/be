@@ -10,9 +10,16 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "course_like", indexes = {
-    @Index(name = "idx_course_like_user_course", columnList = "user_id, recommended_course_id")
-})
+@Table(name = "course_like", 
+       indexes = {
+           @Index(name = "idx_course_like_user_course", columnList = "user_id, recommended_course_id")
+       },
+       uniqueConstraints = {
+           @UniqueConstraint(
+               name = "uk_course_like_user_course",
+               columnNames = {"user_id", "recommended_course_id"}
+           )
+       })
 public class CourseLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +32,9 @@ public class CourseLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recommended_course_id")
     private RecommendedCourse recommendedCourse;
+
+    @Version
+    private Long version;
 
     @Builder
     public CourseLike(User user, RecommendedCourse recommendedCourse) {

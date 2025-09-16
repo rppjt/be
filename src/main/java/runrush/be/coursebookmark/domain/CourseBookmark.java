@@ -15,9 +15,16 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "course_bookmark", indexes = {
-    @Index(name = "idx_course_bookmark_user_course", columnList = "user_id, recommended_course_id")
-})
+@Table(name = "course_bookmark", 
+       indexes = {
+           @Index(name = "idx_course_bookmark_user_course", columnList = "user_id, recommended_course_id")
+       },
+       uniqueConstraints = {
+           @UniqueConstraint(
+               name = "uk_course_bookmark_user_course",
+               columnNames = {"user_id", "recommended_course_id"}
+           )
+       })
 public class CourseBookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +41,9 @@ public class CourseBookmark {
     @CreatedDate
     @Column(name = "bookmarked_at")
     private LocalDateTime bookmarkedAt;
+
+    @Version
+    private Long version;
 
     @Builder
     public CourseBookmark(User user, RecommendedCourse course) {

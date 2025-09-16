@@ -33,6 +33,9 @@ public class User {
 
     private int experiencePoints;
 
+    @Version
+    private Long version;
+
     @Builder
     public User(String kakaoId, String email, String name, String profileImage, String nickname) {
         this.kakaoId = kakaoId;

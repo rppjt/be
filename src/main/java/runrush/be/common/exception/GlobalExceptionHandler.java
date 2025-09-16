@@ -2,8 +2,11 @@ package runrush.be.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -123,6 +126,85 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ErrorCode.NOT_FOUND.getStatus())
                 .body(errorResponse);
+    }
+
+    /**
+     * UNIQUE 제약조건 위반 처리 (동시성 문제 해결)
+     * 
+     * 사용자의 중복 액션(좋아요, 북마크, 친구 요청)을 우아하게 처리
+     */
+    @ExceptionHandler({DataIntegrityViolationException.class, DuplicateKeyException.class})
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            DataIntegrityViolationException e,
+            HttpServletRequest request) {
+            
+        String constraintName = extractConstraintName(e);
+        ErrorCode errorCode = determineErrorCodeByConstraint(constraintName);
+        
+        log.warn("🔐 동시성 제어 - 중복 데이터 방지: constraint={}, path={}", 
+                constraintName, request.getRequestURI());
+        
+        ErrorResponse errorResponse = ErrorResponse.ofWithPath(
+                errorCode,
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(errorResponse);
+    }
+    
+    /**
+     * 낙관적 락 충돌 처리
+     * 
+     * 여러 사용자가 동시에 같은 데이터를 수정할 때 발생
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailureException(
+            ObjectOptimisticLockingFailureException e,
+            HttpServletRequest request) {
+            
+        log.warn("낙관적 락 충돌 발생: class={}, path={}",
+                e.getPersistentClassName(), request.getRequestURI());
+        
+        ErrorResponse errorResponse = ErrorResponse.ofWithPath(
+                ErrorCode.OPTIMISTIC_LOCK_ERROR,
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity
+                .status(ErrorCode.OPTIMISTIC_LOCK_ERROR.getStatus())
+                .body(errorResponse);
+    }
+    
+    /**
+     * 제약조건 이름을 기반으로 적절한 ErrorCode 결정
+     */
+    private ErrorCode determineErrorCodeByConstraint(String constraintName) {
+        if (constraintName.contains("course_like")) {
+            return ErrorCode.DUPLICATE_COURSE_LIKE;
+        } else if (constraintName.contains("course_bookmark")) {
+            return ErrorCode.DUPLICATE_COURSE_BOOKMARK;
+        } else if (constraintName.contains("friends")) {
+            return ErrorCode.DUPLICATE_FRIEND_REQUEST;
+        }
+        return ErrorCode.CONCURRENT_MODIFICATION_ERROR;
+    }
+    
+    /**
+     * 예외 메시지에서 제약조건 이름 추출
+     */
+    private String extractConstraintName(Exception e) {
+        String message = e.getMessage();
+        if (message.contains("'")) {
+            // 'uk_course_like_user_course' 형태에서 제약조건 이름 추출
+            int start = message.indexOf("'");
+            int end = message.indexOf("'", start + 1);
+            if (start > -1 && end > start) {
+                return message.substring(start + 1, end);
+            }
+        }
+        return "unknown";
     }
 
     /**

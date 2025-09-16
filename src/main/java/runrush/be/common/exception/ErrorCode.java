@@ -69,7 +69,14 @@ public enum ErrorCode {
     LOCATION_SHARING_DISABLED(HttpStatus.FORBIDDEN, "L004", "위치 공유가 비활성화되어 있습니다."),
     LOCATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "L005", "위치 정보에 접근할 권한이 없습니다."),
     GPS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "L006", "GPS 권한이 거부되었습니다."),
-    LOCATION_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "L007", "위치 서비스를 사용할 수 없습니다.");
+    LOCATION_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "L007", "위치 서비스를 사용할 수 없습니다."),
+
+    // ===== 동시성/중복 관련 에러 (CO: Concurrency) =====
+    DUPLICATE_COURSE_LIKE(HttpStatus.CONFLICT, "CO001", "이미 좋아요한 코스입니다."),
+    DUPLICATE_COURSE_BOOKMARK(HttpStatus.CONFLICT, "CO002", "이미 북마크한 코스입니다."),
+    DUPLICATE_FRIEND_REQUEST(HttpStatus.CONFLICT, "CO003", "이미 친구 요청을 보냈습니다."),
+    CONCURRENT_MODIFICATION_ERROR(HttpStatus.CONFLICT, "CO004", "다른 사용자가 동시에 수정하여 충돌이 발생했습니다."),
+    OPTIMISTIC_LOCK_ERROR(HttpStatus.CONFLICT, "CO005", "데이터가 다른 사용자에 의해 수정되었습니다. 새로고침 후 다시 시도해주세요.");
 
     private final HttpStatus status;
     private final String code;

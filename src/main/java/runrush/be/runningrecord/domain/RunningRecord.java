@@ -82,6 +82,13 @@ public class RunningRecord {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Version
+    private Long version;
+
+    // 멱등성을 위한 요청 식별자 (클라이언트에서 제공하는 고유 키)
+    @Column(name = "idempotency_key", unique = true)
+    private String idempotencyKey;
+
     @Builder
     public RunningRecord(
             User user,
@@ -98,7 +105,8 @@ public class RunningRecord {
             LocalDateTime startedTime,
             LocalDateTime endedTime,
             long totalTime,
-            double pace
+            double pace,
+            String idempotencyKey
     ) {
         this.user = user;
         this.recommendedCourse = recommendedCourse;
@@ -115,6 +123,7 @@ public class RunningRecord {
         this.endedTime = endedTime;
         this.totalTime = totalTime;
         this.pace = pace;
+        this.idempotencyKey = idempotencyKey;
     }
 
     public void recordDelete() {

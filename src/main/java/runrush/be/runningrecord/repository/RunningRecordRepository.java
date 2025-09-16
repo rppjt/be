@@ -89,4 +89,10 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
             "GROUP BY rc.id, rc.title, rc.user.name, rc.totalDistance " +
             "ORDER BY COUNT(rr.id) DESC")
     List<PopularRecommendedCourseResponse> findPopularRecommendedCourseStats();
+    
+    // 멱등성 키로 기존 기록 조회
+    Optional<RunningRecord> findByIdempotencyKey(String idempotencyKey);
+    
+    // 멱등성 키 존재 여부 확인
+    boolean existsByIdempotencyKey(String idempotencyKey);
 }

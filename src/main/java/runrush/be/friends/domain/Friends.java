@@ -9,10 +9,17 @@ import runrush.be.user.domain.User;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "friends", indexes = {
-    @Index(name = "idx_friends_requester_status", columnList = "requester_id, friend_status"),
-    @Index(name = "idx_friends_target_status", columnList = "target_id, friend_status")
-})
+@Table(name = "friends", 
+       indexes = {
+           @Index(name = "idx_friends_requester_status", columnList = "requester_id, friend_status"),
+           @Index(name = "idx_friends_target_status", columnList = "target_id, friend_status")
+       },
+       uniqueConstraints = {
+           @UniqueConstraint(
+               name = "uk_friends_direction", 
+               columnNames = {"requester_id", "target_id"}
+           )
+       })
 public class Friends {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +36,9 @@ public class Friends {
     @Enumerated(EnumType.STRING)
     @Column(name = "friend_status")
     private FriendStatus status;
+
+    @Version
+    private Long version;
 
     @Builder
     public Friends(User requester, User target) {

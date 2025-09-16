@@ -471,7 +471,8 @@ class RunningRecordServiceTest {
                 37.566, 126.977, 37.563, 126.982,
                 LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                 LocalDateTime.of(2024, 1, 1, 9, 30, 0),
-                courseId // 추천 코스 ID 포함
+                courseId, // 추천 코스 ID 포함
+                "test_idempotency_key_1" // 멱등성 키 추가
         );
         
         String imageUrl = "https://example.com/image.jpg";
@@ -505,7 +506,8 @@ class RunningRecordServiceTest {
                 37.566, 126.977, 37.563, 126.982,
                 LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                 LocalDateTime.of(2024, 1, 1, 9, 30, 0),
-                courseId // 존재하지 않는 코스 ID
+                courseId, // 존재하지 않는 코스 ID
+                "test_idempotency_key_2" // 멱등성 키 추가
         );
         
         User user = createTestUser();
@@ -527,7 +529,8 @@ class RunningRecordServiceTest {
                 37.566, 126.977, 37.563, 126.982,
                 LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                 LocalDateTime.of(2024, 1, 1, 9, 30, 0),
-                null
+                null,
+                "test_idempotency_key_default" // 멱등성 키 추가
         );
     }
     
