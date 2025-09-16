@@ -15,6 +15,7 @@ import runrush.be.user.domain.User;
 import runrush.be.user.repository.UserRepository;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,11 +42,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         User user = userRepository.findByKakaoId(userInfo.getId())
                 .orElseGet(() -> {
+                    String randomNickname = generateUniqueNickname();
                     User newUser = User.builder()
                             .kakaoId(userInfo.getId())
                             .email(userInfo.getEmail())
                             .name(userInfo.getName())
                             .profileImage(userInfo.getImage())
+                            .nickname(randomNickname)
                             .build();
                     return userRepository.save(newUser);
                 });
@@ -53,5 +56,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         log.info("카카오 로그인 성공: 사용자 ID = {}, 이메일 = {}", user.getId(), email);
 
         return UserPrincipal.create(user, attributes);
+    }
+
+    private String generateUniqueNickname() {
+        String nickname;
+        do {
+            nickname = UUID.randomUUID().toString().substring(0, 8);
+        } while (userRepository.existsByNickname(nickname));
+        return nickname;
     }
 }

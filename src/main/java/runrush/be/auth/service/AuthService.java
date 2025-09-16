@@ -1,10 +1,15 @@
 package runrush.be.auth.service;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+import runrush.be.auth.domain.AccessToken;
+import runrush.be.auth.domain.CookieFactory;
 import runrush.be.auth.jwt.JwtTokenProvider;
+import runrush.be.common.exception.BusinessException;
+import runrush.be.common.exception.ErrorCode;
 
 import java.time.Instant;
 
@@ -13,27 +18,25 @@ import java.time.Instant;
 public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CookieFactory cookieFactory;
+    
+    @Value("${COOKIE_SECURE}")
+    private boolean cookieSecure;
+    
+    @Value("${COOKIE_SAME_SITE}")
+    private String cookieSameSite;
 
-    public void logout(String accessToken, HttpServletResponse response) {
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("유효한 토큰 형식이 아닙니다.");
+    public void logout(String accessTokenWithBearer, HttpServletResponse response) {
+        AccessToken accessToken = AccessToken.from(accessTokenWithBearer);
+        
+        if (!jwtTokenProvider.validateToken(accessToken.getToken())) {
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
-
-        String token = accessToken.substring(7);
-
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
-
-        String email = jwtTokenProvider.getEmailFromToken(token);
-
+        
+        String email = jwtTokenProvider.getEmailFromToken(accessToken.getToken());
         refreshTokenService.deleteRefreshToken(email);
-
-        Cookie cookie = new Cookie("refresh_token", "");
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
+        
+        response.addCookie(cookieFactory.createLogoutCookie());
     }
 
     public String reissueAccessToken(String refreshToken) {
@@ -43,16 +46,13 @@ public class AuthService {
     public void setRefreshTokenCookie(String email, HttpServletResponse response) {
         String refreshToken = jwtTokenProvider.generateRefreshToken(email);
         Instant jwtExpiration = jwtTokenProvider.getJwtExpiration(refreshToken);
-        long secondsUntilExpiration = jwtExpiration.getEpochSecond() - Instant.now().getEpochSecond();
-
+        
         refreshTokenService.renewRefreshToken(email, refreshToken, jwtExpiration);
-
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false); // 로컬
-        refreshTokenCookie.setMaxAge((int) secondsUntilExpiration);
-        response.addCookie(refreshTokenCookie);
+        
+        ResponseCookie cookie = cookieFactory.createRefreshTokenCookie(
+            refreshToken, jwtExpiration, cookieSecure, cookieSameSite);
+        
+        response.setHeader("Set-Cookie", cookie.toString());
     }
 
     public String generateAccessToken(String email) {

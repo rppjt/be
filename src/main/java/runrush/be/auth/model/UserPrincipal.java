@@ -29,7 +29,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         return UserPrincipal.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .password("")
+                .password(null)
                 .authorities(authorities)
                 .attributes(attributes)
                 .build();
